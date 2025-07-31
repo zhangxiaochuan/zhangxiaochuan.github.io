@@ -1,0 +1,77 @@
+site_name: Code Never Lies
+site_url: https://zhangxiaochuan.github.io
+site_author: Xiaochuan Zhang
+site_description: <p>这里只有冷静思考，没有浮夸喧哗 </p> 这里只有算法与代码，没有装饰和繁杂
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    - toc.follow
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - content.tabs.link
+    - search.highlight
+    - search.suggest
+    - header.autohide
+  palette:
+    - scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: 深色模式
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/white-balance-sunny
+        name: 浅色模式
+  font:
+    text: "Noto Sans SC"
+    code: "Fira Code"
+  icon:
+    repo: fontawesome/brands/github
+
+repo_url: https://github.com/zhangxiaochuan
+repo_name: GitHub
+edit_uri: edit/main/docs/
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.magiclink
+  - pymdownx.emoji
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - footnotes
+  - attr_list
+  - def_list
+  - tables
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://unpkg.com/glightbox/dist/js/glightbox.min.js
+
+extra_css:
+  - stylesheets/extra.css
+  - https://unpkg.com/glightbox/dist/css/glightbox.min.css
+
+plugins:
+  - search
+  - glightbox
+  - search
+  - macros
