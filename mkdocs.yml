@@ -7,8 +7,6 @@ theme:
   name: material
   language: zh
   features:
-    - navigation.instant
-    - navigation.sections
     - navigation.tabs
     - toc.follow
     - navigation.top
