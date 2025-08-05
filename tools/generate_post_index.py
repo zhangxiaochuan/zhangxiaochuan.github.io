@@ -6,7 +6,7 @@ INDEX_MD_PATH = os.path.join(POSTS_DIR, "index.md")
 def make_title_from_filename(filename):
     name = filename[:-3]  # 去掉 .md
     name = name.replace("-", " ")
-    return name.title()
+    return name
 
 if not os.path.exists(POSTS_DIR):
     print(f"❌ 找不到目录: {POSTS_DIR}，请先创建并添加至少一篇文章")
