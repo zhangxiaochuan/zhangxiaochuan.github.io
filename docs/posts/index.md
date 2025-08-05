@@ -9,6 +9,7 @@
 - [CLIP：多模态之钥](CLIP：多模态之钥.md)
 - [GradScaler的数学原理简述](GradScaler的数学原理简述.md)
 - [LoRA：大模型的低秩密语](LoRA：大模型的低秩密语.md)
+- [PPO原理及避坑指南](PPO原理及避坑指南.md)
 - [Position Embedding之我见](Position Embedding之我见.md)
 - [RoPE：相对距离感知的秘密](RoPE：相对距离感知的秘密.md)
 - [为何FP16训练时梯度容易下溢为0？](为何FP16训练时梯度容易下溢为0？.md)
