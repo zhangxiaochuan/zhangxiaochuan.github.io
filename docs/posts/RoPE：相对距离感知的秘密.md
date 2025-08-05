@@ -17,7 +17,7 @@ $R_{\theta_p}\begin{pmatrix}x_{2i}x_{2i+1}\end{pmatrix}= \begin{pmatrix}x_{2i}\c
 + **无额外参数**：与可学习绝对嵌入相比，参数为零，显存占用更低。
 + **易于长文本插值/外推**：通过伸缩$\theta$或插值，可把预训练 2 k → 128 k tokens。
 
-![](../../assets/images/RoPE-相对距离感知的秘密/1753274760986-0762e21b-4b65-45c7-b5e0-1af4f2414fb4.png)
+![](../assets/images/RoPE-相对距离感知的秘密/1753274760986-0762e21b-4b65-45c7-b5e0-1af4f2414fb4.png)
 
 
 

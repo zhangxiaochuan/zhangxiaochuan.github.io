@@ -43,7 +43,7 @@ def process_markdown(input_path, output_dir, article_name):
         # 获取对应的文件名
         fname = os.path.basename(original_url.split('#')[0].split('?')[0])
         # 构造相对路径引用，根据假定结构，上两级到assets
-        new_path = f'../../assets/images/{article_name}/{fname}'
+        new_path = f'../assets/images/{article_name}/{fname}'
         return f'![]({new_path})'
     
     new_md_text = pattern.sub(replace_link, md_text)
