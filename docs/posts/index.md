@@ -6,6 +6,7 @@
 
 ## 🔖 文章列表
 
+- [Clip：多模态之钥](CLIP：多模态之钥.md)
 - [Gradscaler的数学原理简述](GradScaler的数学原理简述.md)
 - [Lora 大模型的低秩密语](LoRA-大模型的低秩密语.md)
 - [Position Embedding之我见](Position Embedding之我见.md)
