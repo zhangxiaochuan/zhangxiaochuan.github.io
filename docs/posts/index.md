@@ -12,5 +12,6 @@
 - [PPO原理及避坑指南](PPO原理及避坑指南.md)
 - [Position Embedding之我见](Position Embedding之我见.md)
 - [RoPE：相对距离感知的秘密](RoPE：相对距离感知的秘密.md)
+- [ZeRO优化器设计理念解析](ZeRO优化器设计理念解析.md)
 - [为何FP16训练时梯度容易下溢为0？](为何FP16训练时梯度容易下溢为0？.md)
 - [标准数据并行（DP）训练流程解析](标准数据并行（DP）训练流程解析.md)
