@@ -1,3 +1,10 @@
+---
+title: Position Embedding之我见
+tags:
+  - 位置编码
+  - LLM
+---
+
 Transformer 架构抛弃了 RNN 和 CNN 中天然带有顺序感的结构，因此为了让模型理解 token 之间的**位置信息**，必须显式地注入**位置编码（Positional Encoding）**。
 
 最常见的编码方式，是《Attention is All You Need》中提出的 **正余弦位置编码（Sinusoidal Positional Encoding）**，其核心设计是：

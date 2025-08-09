@@ -1,3 +1,10 @@
+---
+title: 标准数据并行（DP）训练流程解析
+tags:
+  - 并行训练
+  - LLM
+---
+
 ## 1. 参数初始化与同步机制
 在数据并行 (Data Parallel, DP) 训练中，每块 GPU 都保有一份完整的模型副本。训练开始时需要确保各 GPU 上模型参数**初始值一致**。通常的做法是在一个进程上初始化模型参数，然后将其广播同步到其他 GPU。例如，在 PyTorch DistributedDataParallel (DDP) 中，构造 DDP 对象时会使用 `ProcessGroup::broadcast()` 将 rank 0 进程的模型参数状态 (`state_dict`) 发送给所有其他进程。这样可以保证每个 GPU 上的模型副本从一开始就具有相同的权重值。如果模型包含缓冲区（如 BatchNorm 的均值/方差），DDP 也会在每次前向计算前广播同步这些缓冲区，从而保持模型的一致性。
 

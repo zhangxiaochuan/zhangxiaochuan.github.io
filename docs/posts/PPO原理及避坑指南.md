@@ -1,3 +1,11 @@
+---
+title: PPO原理及避坑指南
+tags:
+  - 强化学习
+  - LLM
+  - Post Training
+---
+
 ## 1. PPO 算法原理
 **背景与动机：** Proximal Policy Optimization（PPO）算法由 OpenAI 的 John Schulman 等人在 2017 年提出。它属于策略梯度方法的一种改进，旨在解决标准策略梯度方法不稳定、大步更新容易导致性能崩溃的问题。在此之前，Trust Region Policy Optimization（TRPO）算法通过在策略更新时加入严格的 KL 散度约束来保证策略每次只做小幅度改进，从而实现稳定的单调提升，但 TRPO 需要二阶导数和复杂的共轭梯度算法实现，计算代价高且实现复杂。PPO 的提出正是为了**在保持策略更新稳定性的同时，简化实现难度**。实验表明，PPO 在采样效率、性能稳定性上可媲美 TRPO，但**只需使用一阶优化方法（如 SGD 或 Adam）即可实现**，无需复杂的二阶优化。
 

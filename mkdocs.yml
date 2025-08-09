@@ -73,3 +73,7 @@ plugins:
   - glightbox
   - search
   - macros
+
+nav:
+  - Posts: posts/index.md
+  - Tags: tags/index.md
