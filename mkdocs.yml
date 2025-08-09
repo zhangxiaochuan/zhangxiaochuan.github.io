@@ -1,11 +1,13 @@
-site_name: Code Never Lies
-site_url: https://zhangxiaochuan.github.io
+site_name: MatrixMind.Fun
+site_url: http://matrixmind.fun
 site_author: Xiaochuan Zhang
 site_description: <p>这里只有冷静思考，没有浮夸喧哗 </p> 这里只有算法与代码，没有装饰和繁杂
 
 theme:
   name: material
   language: zh
+  logo: assets/images/logo.png 
+  favicon: assets/images/logo.png 
   features:
     - navigation.tabs
     - toc.follow
@@ -18,14 +20,14 @@ theme:
     - header.autohide
   palette:
     - scheme: default
-      primary: teal
-      accent: amber
+      primary: blue   
+      accent: pink
       toggle:
         icon: material/weather-night
         name: 深色模式
     - scheme: slate
-      primary: teal
-      accent: amber
+      primary: blue  
+      accent: pink
       toggle:
         icon: material/white-balance-sunny
         name: 浅色模式
@@ -65,7 +67,8 @@ extra_javascript:
   - https://unpkg.com/glightbox/dist/js/glightbox.min.js
 
 extra_css:
-  - stylesheets/extra.css
+  - stylesheets/brand.css
+  # - stylesheets/extra.css
   - https://unpkg.com/glightbox/dist/css/glightbox.min.css
 
 plugins:
@@ -77,3 +80,5 @@ plugins:
 nav:
   - Posts: posts/index.md
   - Tags: tags/index.md
+  - Projects: projects/index.md
+  - About: about/index.md
