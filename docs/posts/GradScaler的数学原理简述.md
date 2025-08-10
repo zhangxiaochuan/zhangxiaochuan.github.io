@@ -17,11 +17,11 @@ tags:
 #### 损失放大
 给定放大因子$S(S\gg1)$（通常取 2 的幂，便于位移实现）
 
-$L_s = S \, L$
+$$L_s = S \, L$$
 
 在后向传播时，链式法则保证梯度同样被放大：
 
-$\nabla_w L_s \;=\; \frac{\partial\, (S L)}{\partial w} \;=\; S \,\frac{\partial L}{\partial w}\;=\; S \,\nabla_w L$
+$$\nabla_w L_s \;=\; \frac{\partial\, (S L)}{\partial w} \;=\; S \,\frac{\partial L}{\partial w}\;=\; S \,\nabla_w L$$
 
 + 若$\nabla_w L$原本落在$\bigl[10^{-7},10^{-3}\bigr]$，而 float16 最小正数约$6\times10^{-5}$，则乘以$S=2^{10}=1024$后便能落入可表示区间，避免被截成 0。
 
@@ -38,7 +38,7 @@ $\nabla_w L_s \;=\; \frac{\partial\, (S L)}{\partial w} \;=\; S \,\frac{\partial
 #### 梯度缩放回原尺度
 未溢出的情况下，在执行优化器更新前把梯度除回$S$：
 
-$\nabla_w L \;=\; \frac{\nabla_w L_s}{S}$
+$$\nabla_w L \;=\; \frac{\nabla_w L_s}{S}$$
 
 因为微分线上性，$\nabla_w L$与常规 FP32 训练得到的梯度数值完全一致；随后再做梯度裁剪、Adam 动量更新等，数值就已安全地处在 FP32 域。
 

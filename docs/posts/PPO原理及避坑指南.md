@@ -14,11 +14,11 @@ tags:
 
 **截断目标函数：** PPO-Clip 的关键在于定义**概率比率**$r_t(\theta)$来度量新旧策略在同一动作上的概率变化幅度：
 
-$r_t(\theta) \;=\; \frac{\pi_{\theta}(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)} ,$
+$$r_t(\theta) \;=\; \frac{\pi_{\theta}(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)} ,$$
 
 其中$\pi_{\theta}$是当前策略，$\pi_{\theta_{\text{old}}}$是策略更新前的旧策略。如果$r_t(\theta) > 1$，表示新策略在状态$s_t$下让动作$a_t$更加趋向于发生；反之若$r_t(\theta) < 1$，则新策略降低了该动作的概率。为了避免$r_t(\theta)$偏离1过多（对应策略改变太大），PPO 引入了**截断剪切操作**。截断版策略梯度的目标函数可以表示为：
 
-$L_{\text{CLIP}}(\theta) \;=\; \mathbb{E}_t\Big[\,\min\big(r_t(\theta)\,\hat{A}_t,\;\text{clip}\big(r_t(\theta),\,1-\varepsilon,\,1+\varepsilon\big)\,\hat{A}_t\big)\Big],$
+$$L_{\text{CLIP}}(\theta) \;=\; \mathbb{E}_t\Big[\,\min\big(r_t(\theta)\,\hat{A}_t,\;\text{clip}\big(r_t(\theta),\,1-\varepsilon,\,1+\varepsilon\big)\,\hat{A}_t\big)\Big],$$
 
 其中$\hat{A}_t$是优势函数的估计，$\varepsilon$是一个小的超参数（例如 0.1 或 0.2）。这个目标函数取原始概率比率优势$r_t(\theta)\hat{A}_t$和**截断后的概率比率优势**两者中的较小值，从而实现对策略更新幅度的限制。当优势$\hat{A}_t$为正时，如果$r_t(\theta)$尝试增大超过$(1+\varepsilon)$，截断操作会阻止策略优势继续变大；当优势为负时，若$r_t(\theta)$降低到小于$(1-\varepsilon)$，截断也会阻止策略过度减小该动作概率。通过这种方式，PPO **在目标函数层面内嵌了对策略更新幅度的限制**，近似实现了 TRPO 的“信赖域”效果，而无需显式计算二阶梯度或进行约束优化。
 
