@@ -20,8 +20,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install mkdocs-material mkdocs-glightbox pymdown-extensions mkdocs-macros-plugin
+          pip install mkdocs-material mkdocs-glightbox pymdown-extensions mkdocs-macros-plugin pyyaml
 
       - name: Deploy to GitHub Pages
         run: |
+          python tools/generate_index.py
           mkdocs gh-deploy --force -c
