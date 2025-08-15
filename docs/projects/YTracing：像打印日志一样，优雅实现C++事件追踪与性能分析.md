@@ -39,7 +39,7 @@ YTracing 通过一个编译宏 `TRACING` 来完美解决这个问题。
 
 1. 添加 PPA 仓库：
 ```bash
-sudo add-apt-repository ppa:zhangxiaochuan/ytracing
+sudo add-apt-repository ppa:xiaochuanzhang/ytracing
 sudo apt update
 ````
 
