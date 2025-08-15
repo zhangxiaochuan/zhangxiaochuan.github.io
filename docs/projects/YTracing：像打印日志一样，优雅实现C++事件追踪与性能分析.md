@@ -5,7 +5,7 @@
 
 **GitHub 仓库链接**: `https://github.com/zhangxiaochuan/YTracing`
 
-### YTracing 的核心理念：无侵入，低开销，可插拔
+## YTracing 的核心理念：低侵入，低开销，可插拔
 
 YTracing 的设计哲学是尽可能地减少对业务代码的“侵入性”，并把对程序性能的影响降到最低。
 
@@ -20,7 +20,7 @@ YTracing 的设计哲学是尽可能地减少对业务代码的“侵入性”�
 
 所有的事件数据都由一个全局的 `Collector` 单例进行收集。`Collector` 在一个独立的后台线程中运行，定期将收集到的事件批量写入磁盘。 这种生产者-消费者模式确保了在你的主业务线程中，记录事件的操作几乎是瞬时的，性能开销极小。
 
-### 关键特性：零成本的条件编译
+## 关键特性：零成本的条件编译
 
 我们深知，追踪功能并非在所有时候都需要开启。在发布 Release 版本的二进制文件时，任何微小的额外开销都应该被消除。
 
@@ -31,116 +31,116 @@ YTracing 通过一个编译宏 `TRACING` 来完美解决这个问题。
 
 这意味着，在你的发布版本中，所有与 YTracing 相关的代码都会被编译器彻底优化掉，**不会产生任何额外的性能开销，也不会引入任何运行时依赖**。你的二进制文件会像从未添加过追踪代码一样纯净。
 
+## 快速上手指南
 
-### 快速上手指南
+### 安装
 
-让我们通过一个简单的例子，看看使用 YTracing 有多方便。
+#### 方式一：通过 apt 安装
 
-#### 第 1 步：为你的代码添加“探针”
+1. 添加 PPA 仓库：
+```bash
+sudo add-apt-repository ppa:zhangxiaochuan/ytracing
+sudo apt update
+````
 
-```cpp
-// main.cpp
-#include "YTracing.h" // 仅需包含此头文件
-#include <thread>
-#include <chrono>
-
-void test_function() {
-    YTRACING_FUNCTION(); // 跟踪整个 test_function 的耗时
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-}
-
-int main() {
-    YTRACING_FUNCTION(); // 跟踪 main 函数
-    {
-        YTRACING_SCOPE("Main Scope"); // 跟踪这个特定的代码块
-        std::thread t1(test_function);
-        std::thread t2(test_function);
-        t1.join();
-        t2.join();
-    }
-    return 0;
-}
-```
-
-#### 第 2 步：编译并运行
-
-YTracing 使用 CMake 进行构建。编译过程非常标准：
+2. 安装开发包（包含头文件和库文件）：
 
 ```bash
-# 切换到项目根目录
-mkdir build
-cd build
+sudo apt install libytracing-dev
+```
+
+#### 方式二：通过源码编译
+
+1. 克隆项目：
+
+```bash
+git clone https://github.com/zhangxiaochuan/YTracing.git
+cd YTracing
+```
+
+2. 编译并安装：
+
+```bash
+mkdir build && cd build
 cmake ..
-make
+make -j$(nproc)
+sudo make install
 ```
 
-运行 `main` 示例后，它会自动创建一个带时间戳的目录 `tracing_YYYYMMDD_HHMMSS/` 并生成原始日志。
+### 使用
 
-#### 第 3 步：转换并可视化
+#### 启用追踪功能
 
-使用 `YViewer` 工具将原始日志转换为 `trace.json`，然后将其拖入 [Perfetto UI](https://ui.perfetto.dev) 即可看到清晰的时序图。
 
-*(这是一个示例图，你的实际输出会反映你代码的真实执行情况)*
+在代码中引入头文件，并使用以下两种方法记录追踪信息：
 
-### 如何将 YTracing 集成到你的项目中
+```cpp
+#include <YTracing/YTracing.h>
 
-YTracing 的设计初衷就是为了能被轻松地用作一个第三方库。下面是推荐的集成方式。
+void my_function() {
+    // 方法一：YTRACING_FUNCTION
+    // 记录整个函数的执行时间（作用域是整个函数）
+    YTRACING_FUNCTION();
 
-假设你的项目结构如下：
+    // 模拟代码执行
+    for (int i = 0; i < 1000000; ++i) {}
 
+    {
+        // 方法二：YTRACING_SCOPE("Custom Scope Name")
+        // 记录一个自定义代码块的执行时间（作用域仅限于花括号内）
+        YTRACING_SCOPE("Inner Loop Work");
+
+        for (int j = 0; j < 500000; ++j) {}
+    }
+}
 ```
-MyAwesomeProject/
-├── CMakeLists.txt
-├── src/
-│   └── main.cpp
-└── libs/
-    └── YTracing/  <-- 你可以把 YTracing 作为一个子模块或直接拷贝到这里
-```
+区别说明：
 
-在你的**顶层 `CMakeLists.txt`** 中，你可以这样配置：
+* YTRACING_FUNCTION()：自动以函数名作为事件名称，追踪整个函数的执行耗时。
+* YTRACING_SCOPE("Name")：以自定义名称追踪特定代码块的执行耗时，适合函数内部的局部性能分析。
+
+
+在 `CMakeLists.txt` 中添加以下定义以启用追踪，并链接YTracing库：
 
 ```cmake
-# MyAwesomeProject/CMakeLists.txt
+add_definitions(-DTRACING=1) # 启用追踪功能，去掉这行即可关闭追踪功能
 
-cmake_minimum_required(VERSION 3.14) # 推荐使用较新版本的 CMake
-project(MyAwesomeProject)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# --- 集成 YTracing ---
-# 1. 添加 YTracing 的子目录
-add_subdirectory(libs/YTracing)
-
-# 2. (可选但推荐) 通过选项来控制是否开启追踪
-option(ENABLE_TRACING "Enable YTracing event collection" ON)
-if(ENABLE_TRACING)
-    message(STATUS "YTracing is enabled.")
-    # 为所有目标开启 TRACING 宏
-    add_definitions(-DTRACING=1)
-else()
-    message(STATUS "YTracing is disabled.")
-endif()
-# --- 集成结束 ---
-
-# 添加你的主程序可执行文件
-add_executable(MyAwesomeApp src/main.cpp)
-
-# 链接到 YTracing 的核心库
-# YTracingCore 已经处理好了它所需的所有依赖 (如 pthread)
-target_link_libraries(MyAwesomeApp PRIVATE YTracingCore)
-
-# 如果你的项目也需要 YTracing 的头文件，可以这样做
-target_include_directories(MyAwesomeApp PRIVATE libs/YTracing/src)
+find_package(ytracing REQUIRED)
+target_link_libraries(your_target PRIVATE YTracing::YTracingCore)
 ```
 
-**这样配置的好处是：**
+#### 使用 **YViewer** 进行追踪可视化
 
-1.  **开关自如**：你现在可以在 CMake 配置阶段通过 `-DENABLE_TRACING=OFF` 来完全禁用追踪功能，无需修改任何代码。
-2.  **依赖清晰**：你的应用程序 `MyAwesomeApp` 只需链接到 `YTracingCore` 这一个目标。CMake 会自动处理所有底层的库依赖和头文件路径。
-3.  **现代 CMake 实践**: 这种方式（使用 `add_subdirectory` 和 `target_link_libraries`）是目前 CMake 社区推荐的标准做法，比手动的 `include_directories` 和 `link_libraries` 更加健壮和模块化。
+为方便对跟踪数据进行直观分析，**YTracing** 提供了 `YViewer` 命令行工具，帮助你可视化跟踪结果：
 
-### 常见问题排查 (FAQ)
+1. 完成编译之后，可以执行目标程序，并在工作目录下生成tracing_YYYYMMDD_HHMMSS文件夹，其中包括`.raw`格式的原始追踪数据。
+2. 使用YViewer**将原始 `.raw` 文件转为 Perfetto 格式**  
+   `YViewer` 会将由 YTracing 生成的 `.raw` 跟踪数据转换为可兼容 Perfetto 的 `trace.json` 格式。
+
+3. **在 Perfetto UI 中查看与分析**  
+   在浏览器中打开 [Perfetto Web UI](https://ui.perfetto.dev)，加载生成的 `trace.json` 后，你可以：
+    - 查看函数调用与作用域嵌套关系及其耗时情况；
+    - 通过缩放、平移、名称或时间过滤等操作，精准定位感兴趣的部分；
+    - 在可视化时间线界面中分析并发执行、线程活动与函数执行时序等。
+
+4. **推荐使用流程**
+
+   ```bash
+   # 1. 运行已插桩的程序：
+   ./your_target
+   # 此操作会生成一个包含 .raw 文件的 tracing_YYYYMMDD_HHMMSS 目录。
+
+   # 2. 将跟踪数据转换为 JSON：
+   YViewer tracing_YYYYMMDD_HHMMSS/
+   # 将在tracing_YYYYMMDD_HHMMSS目录下将生成 trace.json 文件。
+
+   # 3. 打开并可视化：
+   浏览器打开 [Perfetto UI](https://ui.perfetto.dev) → 点击 “Open trace file” → 选择 `trace.json`。
+   
+![](../assets/images/YTracing：像打印日志一样，优雅实现C++事件追踪与性能分析/trace_example.png)
+
+
+## 常见问题排查 (FAQ)
 
 **Q1: 集成后没有任何追踪数据生成，该如何排查？**
 
