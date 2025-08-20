@@ -14,7 +14,7 @@ Transformer 自注意力对序列顺序不敏感，必须显式注入位置信
 
 RoPE 最早由 RoFormer 提出，其核心思想是：把查询$q$和键$k$视为偶数/奇数交错的二维向量对$(x_{2i},x_{2i+1})$，对第$p$位应用同一角度$\theta_p$的旋转变换
 
-$$R_{\theta_p}\begin{pmatrix}x_{2i}x_{2i+1}\end{pmatrix}= \begin{pmatrix}x_{2i}\cos\theta_p - x_{2i+1}\sin\theta_p \ x_{2i}\sin\theta_p + x_{2i+1}\cos\theta_p\end{pmatrix}$$
+$$R_{\theta_p}\begin{pmatrix}x_{2i},x_{2i+1}\end{pmatrix}= \begin{pmatrix}x_{2i}\cos\theta_p - x_{2i+1}\sin\theta_p \ x_{2i}\sin\theta_p + x_{2i+1}\cos\theta_p\end{pmatrix}$$
 
 其中$\theta_p = p/10000^{2i/d}$与传统正弦编码同源。乘积$q^\top k$中旋转角度相减，自然产生相对位置偏差，因此自注意力仅依赖$p_q-p_k$。
 
