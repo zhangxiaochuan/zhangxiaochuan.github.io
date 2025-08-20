@@ -3,7 +3,7 @@ title: DeepSeekMath论文精读
 tags:
   - LLM
 ---
-
+{{ render_tags() }}
 
 ## 0. 引言
 + **定位**：DeepSeekMath 是在代码基座上继续预训练的大规模数学模型，随后用指令微调与轻量强化学习进一步打磨。
