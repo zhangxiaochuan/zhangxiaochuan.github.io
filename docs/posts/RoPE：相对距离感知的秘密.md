@@ -12,8 +12,10 @@ Transformer 自注意力对序列顺序不敏感，必须显式注入位置信
 ## 2 RoPE是什么
 在大多数 LLM 代码与论文的实现里，**RoPE 并不是“给词向量加一列坐标”的传统位置嵌入，而是在每个自注意力层内对 Query/Key 矩阵做一次按位置角度的旋转**：输入 token 先进入词表查找得到$h$，随后经线性投影分成$q,k,v$，接着仅对$q$、$k$进行 `apply_rotary_pos_emb`，再进入点积‑Softmax 计算注意力权重。这一步发生在 **Multi‑Head Attention 模块内部**，与词嵌入矩阵本身（token embedding）解耦。
 
-RoPE 最早由 RoFormer 提出，其核心思想是：把查询$q$和键$k$视为偶数/奇数交错的二维向量对$(x_{2i},x_{2i+1})$，对第$p$位应用同一角度$\theta_p$的旋转变换  
+RoPE 最早由 RoFormer 提出，其核心思想是：把查询$q$和键$k$视为偶数/奇数交错的二维向量对$(x_{2i},x_{2i+1})$，对第$p$位应用同一角度$\theta_p$的旋转变换
+
 $$R_{\theta_p}\begin{pmatrix}x_{2i}x_{2i+1}\end{pmatrix}= \begin{pmatrix}x_{2i}\cos\theta_p - x_{2i+1}\sin\theta_p \ x_{2i}\sin\theta_p + x_{2i+1}\cos\theta_p\end{pmatrix}$$
+
 其中$\theta_p = p/10000^{2i/d}$与传统正弦编码同源。乘积$q^\top k$中旋转角度相减，自然产生相对位置偏差，因此自注意力仅依赖$p_q-p_k$。
 
 
