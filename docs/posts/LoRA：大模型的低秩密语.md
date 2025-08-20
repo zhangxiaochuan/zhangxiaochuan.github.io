@@ -1,5 +1,5 @@
 ---
-title: GradScaler的数学原理简述
+title: LoRA：大模型的低秩密语
 tags:
   - LoRA
   - Post Training
