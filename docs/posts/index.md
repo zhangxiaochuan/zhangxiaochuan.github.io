@@ -7,6 +7,7 @@
 ## 🔖 文章列表
 
 - [CLIP：多模态之钥](CLIP：多模态之钥.md)
+- [DeepSeek Coder工程化方案](DeepSeek-Coder工程化方案.md)
 - [DeepSeekMath论文精读](DeepSeekMath论文精读.md)
 - [GRPO原理及与相关对比](GRPO原理及与相关对比.md)
 - [GradScaler的数学原理简述](GradScaler的数学原理简述.md)
