@@ -8,6 +8,7 @@
 
 - [CLIP：多模态之钥](CLIP：多模态之钥.md)
 - [DeepSeekMath论文精读](DeepSeekMath论文精读.md)
+- [GRPO原理及与相关对比](GRPO原理及与相关对比.md)
 - [GradScaler的数学原理简述](GradScaler的数学原理简述.md)
 - [LoRA：大模型的低秩密语](LoRA：大模型的低秩密语.md)
 - [PPO原理及避坑指南](PPO原理及避坑指南.md)
