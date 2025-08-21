@@ -14,14 +14,14 @@ tags:
 
 ## 一、数据工程：让模型“理解项目”，而不只是“见过文件”
 
-### 1. 语料构成与入口筛选：先把大噪声挡在门外
+### 语料构成与入口筛选：先把大噪声挡在门外
 
 * 训练集由 87% 源代码、10% 英文代码相关文本、3% 与代码无关的中文文本组成其中中文部分是“高质量文章，目的是提升模型的中文理解能力”；英文主要来自 GitHub Markdown 与 StackExchange，以补足库用法、调试语境。
 * 抓取范围限定为 2023 年 2 月之前的公开仓库，并**先做规则过滤**，直接把原始体量压缩到 32.8%。这些规则复用了 StarCoder 的做法：限制平均行长与最大行长、字母占比低于 25% 的文件剔除；前 100 字符含 `<?xml version=` 视作 XML 并除 XSLT 外过滤；HTML 要求可见文本比例至少 20% 且不短于 100 字符；JSON 与 YAML 仅保留 50 到 5000 字符的文件等。
 
 **为什么这样做**：StarCoder 的这套启发式过滤能以极低代价砍掉日志、数据文件与模板类噪声，为后续的依赖解析与去重节省大量算力和时间。
 
-### 2. 依赖解析与仓库级排序：把“因果结构”编码进序列
+### 依赖解析与仓库级排序：把“因果结构”编码进序列
 
 多数开源代码模型按“文件级”拼接训练样本，忽略了项目内部的跨文件依赖。DeepSeek-Coder 显式解析 import using include 等调用关系，**对仓库内文件做拓扑式排序**，保证被依赖文件先于引用者出现，并把文件路径以注释形式保留，从而把“项目的结构语境”喂给模型。
 
@@ -44,11 +44,11 @@ def main():
     run(x)
 ```
 
-### 3. 仓库级 near-dedup：去重的“最小原子”应该是仓库
+### 仓库级 near-dedup：去重的“最小原子”应该是仓库
 
 近重复去重不是按“文件”而是按“仓库级串联样本”做，避免误删关键文件导致项目结构断裂。这是跨文件补全场景里非常关键的一步。
 
-### 4. 质量筛选与评测去污染：自证清白
+### 质量筛选与评测去污染：自证清白
 
 除规则外，辅以编译器与质量模型加启发式规则，剔除语法错误与可读性差代码。为防评测泄漏，对 HumanEval、MBPP、GSM8K、MATH 等做 n-gram 过滤：出现与测试集完全相同的 10-gram 直接剔除，长度 3 到 9 的用精确匹配。
 
@@ -60,7 +60,7 @@ def main():
 
 ### 训练目标与采样策略
 
-#### 1.1 目标组合：CausalLM + FIM
+#### 目标组合：CausalLM + FIM
 
 * **主目标**：常规自回归下一 token 预测（CausalLM）。
 * **辅目标**：FIM（Fill-in-the-Middle），令模型在已知前缀与后缀时，预测中间片段 $m$，即最大化 $P(m\mid p,s)$。DeepSeek-Coder 在**预训练阶段**就混入 FIM，以对齐真实的“插入式补全”使用场景。
@@ -119,3 +119,135 @@ def main():
 将 RoPE 缩放因子从 1 提至 4，基频从 10000 调至 100000，并以 **batch size 512、序列 16K、额外 1000 步**做长序列稳定训练；理论上可达 **64K**，但**最可靠的实用区间是 16K**。
 
 
+
+## 附录
+
+### FIM 是什么
+
+把一段序列切成三段：前缀$p$、中间$m$、后缀$s$。把原文重排为一种“可自回归学习”的顺序，让模型在标准左到右损失下，等价于最大化$P(m\mid p,s)$。常见两种编排：
+
+* **PSM**：先放$p$和$s$，最后放$m$
+* **SPM**：先放$s$再放$p$，最后放$m$
+  OpenAI 的研究系统比较了 PSM 与 SPM，并给出文档级与上下文级两种构造方式；要点是仅通过**数据重排**就能学会 infill，无需改网络结构。
+
+DeepSeek-Coder 在预训练时混入 FIM，并做消融后选定“**PSM，采样率约 50%**”，在代码补全与 FIM 能力之间取得平衡。
+
+### 训练时如何“喂数据”
+
+以代码模型常用的哨兵 token 为例（StarCoder 模型卡中展示了实际写法）：
+`<fim_prefix>` 表示前缀位置，`<fim_suffix>` 表示后缀位置，`<fim_middle>` 表示“从这里开始预测中间段”。训练时把文本重排并直接用**普通自回归损失**。([Hugging Face][3])
+
+损失形式可写成
+$L = -\sum_{t\in m}\log P(x_t \mid p,s,x_{<t})$，在实现上等价为对“重排后的整段序列”做标准 NLL。
+
+
+### 示例 1：Python 代码，一行被挖空
+
+原文片段
+
+```
+def area(r):
+    pi = 3.14159
+    return pi * r * r
+```
+
+一次随机切分
+
+* p 前缀
+
+```
+def area(r):
+    pi = 3.14159
+```
+
+* m 中间
+
+```
+    return pi * r * r
+```
+
+* s 后缀
+
+```
+```
+
+（此例 s 为空行，完全没问题）
+
+#### PSM 训练样本
+
+把 p、s 放前面，m 放后面，并加哨兵：
+
+```
+<fim_prefix>def area(r):
+    pi = 3.14159
+<fim_suffix>
+
+<fim_middle>    return pi * r * r
+```
+
+此时模型在看到 `<fim_middle>` 后，按普通左到右目标去预测“return pi \* r \* r”的每个 token，等价于学习 $P(m\mid p,s)$。
+
+#### SPM 训练样本
+
+把 s、p 放前面，m 放后面：
+
+```
+<fim_prefix>
+
+<fim_suffix>def area(r):
+    pi = 3.14159
+<fim_middle>    return pi * r * r
+```
+
+SPM 的好处之一是推理时更利于缓存复用，但训练法仍是相同的“重排加自回归”。
+
+
+## 示例 2：多行插入的典型编辑场景
+
+原文片段
+
+```
+def load_config(path):
+    data = json.load(open(path))
+    return data
+```
+
+切分得到
+
+* p
+
+```
+def load_config(path):
+```
+
+* m
+
+```
+    if not os.path.exists(path):
+        raise FileNotFoundError(path)
+```
+
+* s
+
+```
+    data = json.load(open(path))
+    return data
+```
+
+### PSM 训练样本
+
+```
+<fim_prefix>def load_config(path):
+<fim_suffix>    data = json.load(open(path))
+    return data
+<fim_middle>    if not os.path.exists(path):
+        raise FileNotFoundError(path)
+```
+
+训练时，损失主要落在 `<fim_middle>` 之后的 m 上；但实现层面通常对整段序列做标准 LM 损失，这正是 OpenAI FIM 的“仅靠数据重排即可学习”的关键。([arXiv][1])
+
+
+### 推理时怎么用（与训练目标对齐）
+
+推理时把已知的前缀与后缀放在 `<fim_prefix>...<fim_suffix>...<fim_middle>` 模板里，模型续写“中间”。例如 StarCoder 的模型卡给出的最小调用示例：
+`<fim_prefix>def print_hello_world():\n<fim_suffix>\n    print('Hello world!')<fim_middle>`，模型将生成缺失的中间部分。
