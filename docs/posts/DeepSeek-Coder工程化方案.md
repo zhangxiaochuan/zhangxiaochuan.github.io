@@ -202,7 +202,7 @@ def area(r):
 SPM 的好处之一是推理时更利于缓存复用，但训练法仍是相同的“重排加自回归”。
 
 
-## 示例 2：多行插入的典型编辑场景
+### 示例 2：多行插入的典型编辑场景
 
 原文片段
 
@@ -234,7 +234,7 @@ def load_config(path):
     return data
 ```
 
-### PSM 训练样本
+#### PSM 训练样本
 
 ```
 <fim_prefix>def load_config(path):
@@ -244,7 +244,20 @@ def load_config(path):
         raise FileNotFoundError(path)
 ```
 
-训练时，损失主要落在 `<fim_middle>` 之后的 m 上；但实现层面通常对整段序列做标准 LM 损失，这正是 OpenAI FIM 的“仅靠数据重排即可学习”的关键。([arXiv][1])
+训练时，损失主要落在 `<fim_middle>` 之后的 m 上；但实现层面通常对整段序列做标准 LM 损失，这正是 OpenAI FIM 的“仅靠数据重排即可学习”的关键。
+
+
+#### SPM 训练样本
+
+
+```
+<fim_prefix>    data = json.load(open(path))
+    return data
+<fim_suffix>def load_config(path):
+<fim_middle>    if not os.path.exists(path):
+        raise FileNotFoundError(path)
+
+```
 
 
 ### 推理时怎么用（与训练目标对齐）
