@@ -135,28 +135,98 @@ $$L = L_{\text{CLM}} + \lambda \cdot \frac{1}{D}\sum_{k=1}^{D} L_{\text{MTP}}^{(
 ## 5. 基础设施与工程优化（Infrastructure）
 ### 5.1 集群与总体并行策略
 + **硬件：** 2048×NVIDIA H800；节点内 NVLink/NVSwitch，跨节点 InfiniBand。
-+ **并行：** 典型为 16‑way Pipeline Parallel（PP）× 64‑way Expert Parallel（EP）× 少量 Data Parallel（DP，ZeRO‑1 分摊优化器状态）。**不使用 TP**，用工程优化抵消其带来的通信复杂度。
++ **并行策略：**
+
+  DeepSeek-V3 使用三类并行：
+
+  * Pipeline Parallel (PP)：把模型层切成段，分布到不同 GPU 上流水执行。
+
+  * Expert Parallel (EP)：MoE 专家分布在不同 GPU 上，token 根据路由被发送到对应 GPU 执行。
+
+  * Data Parallel (DP)：同一模型在多个 GPU 上复制，分担不同 batch 的训练数据；梯度在更新时汇总（本次用 ZeRO-1 仅分摊优化器状态）。
+
+  不使用 Tensor Parallel (TP)：TP 是把矩阵拆块分布到多个 GPU 上做并行乘法，但会增加同步通信。DeepSeek-V3 通过 FP8 与通信优化降低显存和算力需求，从而避免 TP 带来的复杂性。
 
 ### 5.2 DualPipe：通信与计算的深度重叠
-+ 将前向与反向传播拆分为更细粒度的计算与 all‑to‑all 子块，重新编排使 dispatch/combine 与 Attention/MLP 交错执行，前后向在管线两端相向填充，最大化通信隐藏。
-+ 显式控制通信核与计算核占用 SM 的比例，减少管道气泡与“空等”。
+**问题背景：** 在 MoE 中，最耗时的操作之一是跨 GPU 的 all-to-all 通信（把 token 激活分发到各专家 GPU，再收集结果）。如果通信不能隐藏，会成为瓶颈。
+
+传统方案：
+
+* 1F1B (One-Forward-One-Backward)：流水线并行的一种调度方式，前后向交替执行。
+
+* ZB1P (Zero Bubble 1F1B)：改进版，减少流水线空泡（等待）。
+
+DualPipe 的创新：
+
+* 将一次前向或反向传播拆解成更小的子块：注意力 → all-to-all dispatch → MLP/专家计算 → all-to-all combine。
+
+* 不同 token 的通信与计算交错执行（dispatch 的同时已有 token 在专家上计算）。
+
+* 前向与反向传播错叠，形成“双向流水线”。
+
+* 显式控制 GPU SM（Streaming Multiprocessor）在 通信核 与 计算核 上的资源分配，减少等待。
+
+**收益：** 几乎把通信时间完全掩盖在计算中，使得大规模 MoE 的训练效率接近于纯计算。
 
 ### 5.3 高效 all‑to‑all 与显存优化
-+ **两段式路由：** 先 IB 发送到目标节点的“同编号 GPU”，再经 NVLink 快速内转至专家 GPU，IB 与 NVLink 两路传输可并行推进。
-+ **warp specialization：** 为 IB 发送、NVLink 转发、接收与累加等任务分设专用 warp 通道，在较少 SM 占用下“跑满”链路带宽。
-+ **显存优化：**  
-激活重计算（如 RMSNorm 与 MLA 上投影输出）、EMA 参数放置 CPU 侧异步更新、MTP 与主干共享嵌入与输出头，优化器状态以 BF16 存储等。
+#### 高效 all-to-all
+
+* **all-to-all 通信：** 每个 GPU 需要把一部分 token 激活发给所有其他 GPU，再接收来自它们的部分，是最重的通信模式。
+* **DeepSeek-V3 优化：**
+
+  * **两段式路由**：先跨节点用 IB 把 token 发到目标节点的“对应 GPU”，再通过 NVLink 在节点内转发到真正负责该专家的 GPU。这样把跨节点和节点内通信解耦，充分利用不同链路带宽。
+  * **warp specialization**：在 GPU 内部分配专门的 warp（线程束）负责通信（如 IB send、NVLink forward），另一些 warp 负责计算，提升并行度。
+  * 实测只需约 **20 个 SM**（总共上百个 SM）即可“跑满” IB+NVLink 带宽，保证通信不拖累整体。
+
+#### 显存优化
+
+* **激活重计算 (activation recomputation)**：不保存部分中间激活，在反向传播时重新计算，换算力节省显存。
+* **EMA 参数放 CPU**：指数滑动平均参数（用于稳定训练）存放在 CPU 内存，降低 GPU 显存占用。
+* **共享嵌入/输出头**：MTP 模块与主干模型共享 embedding 与输出层，避免冗余。
+* **优化器状态压缩**：如用 BF16 存储 Adam 的一二阶矩，进一步减少显存。
+
 
 ### 5.4 FP8 混合精度训练的关键细节
-**三路 GEMM FP8 化：** 前向、反向激活梯度与反向权重梯度的主矩阵乘在 FP8 执行；嵌入、归一化、注意力 softmax、路由器与输出头等关键部分保留高精度；主权重与优化器主状态以 BF16/FP32 存储。
 
-+ **细粒度量化：** 激活按 1×128 通道 tile、权重按 128×128 block 各自独立缩放，抗异常值、扩展有效动态范围；普遍采用 E4M3（尾数优先）以提高数值精度。
-+ **提高乘加累加精度：** 观察到原生 FP8 Tensor Core 累加有效位有限，采用“阶段性晋升到 CUDA Core FP32 寄存器累加后回写”的混合累加路径，在极低开销下显著降低累计误差。
-+ **低精通信：** MoE 的 dispatch/combine 通道对激活与梯度做 FP8 量化传输，关键汇聚点保持 BF16 累加，兼顾带宽与精度。
+#### FP8 格式
+
+* **E4M3**：1 位符号 + 4 位指数 + 3 位尾数 → 动态范围较小，但精度较高，适合激活和权重。
+* **E5M2**：更大动态范围，精度较低，适合梯度。
+  DeepSeek-V3 多数情况下选用 **E4M3**（精度优先）。
+
+#### 关键优化
+
+1. **细粒度量化**
+
+   * 激活按 1×128 的通道 tile 分块，各块独立缩放。
+   * 权重按 128×128 的 block 分块，各块独立缩放。
+   * 好处：避免因极少数 outlier（异常值）导致全局缩放，提升数值稳定性。
+
+2. **混合累加**
+
+   * 在 Hopper GPU 的 Tensor Core 上，FP8 累加只有约 14 位有效位。
+   * DeepSeek-V3 的做法：每累加 128 元素就把部分和 **升到 FP32**（CUDA Core），再回写，减少累积误差。
+
+3. **低精通信**
+
+   * 在 MoE 的 token dispatch/combine 阶段，把激活压缩为 FP8 传输，节省带宽；在关键加和时再转回 BF16。
+
+**结果：** 收敛曲线几乎和 BF16 训练重合，但显存、带宽占用显著下降。
 
 ### 5.5 推理部署：Prefill 与 Decode
-+ **Prefill（高吞吐）：** 最小 4 节点 32 卡单元；注意力 TP4+SP，MoE EP32，DP8 复用；为缓解热点专家，在线统计后**冗余部署**高负载专家的副本；采用双 micro‑batch 交错隐藏 all‑to‑all 与 TP 通信。
-+ **Decode（低时延）：** 最小 40 节点 320 卡单元；注意力 TP4+SP，MoE EP320，DP80；跨节点 all‑to‑all 走 IBGDA 点对点直连；同样可基于统计做冗余专家，降低尾部时延。
+#### Prefill 阶段（并行填充上下文）
+
+* **目标：** 高吞吐 → 输入 prompt 时并行化越多越好。
+* **配置：** 最小单元 32 卡（4 节点）；注意力采用 TP4 (Tensor Parallel in 4 cards) + SP（sequence parallel），MoE EP32 (Expert Parallel in 32 cards)，DP (Data Parallel)。
+* **冗余专家**：对负载最重的专家复制副本，动态重排，避免个别专家拖慢整个 batch。
+* **双 micro-batch**：在同一单元里交错执行两个 batch，隐藏通信延迟。
+
+#### Decode 阶段（自回归逐步生成）
+
+* **目标：** 低延迟 → 每次只生成一个 token，但要响应快。
+* **配置：** 最小单元 320 卡（40 节点）；注意力 TP4+SP，MoE EP320，DP80。
+* **IBGDA (InfiniBand GPU Direct Async)**：直接 GPU ↔ GPU 跨节点通信，绕过 CPU，降低延迟。
+* 同样支持动态冗余专家，减少长尾时延。
 
 ## 6. 超参配置速查
 **模型与注意力**
