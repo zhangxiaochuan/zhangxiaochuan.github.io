@@ -20,14 +20,14 @@ theme:
     - header.autohide
   palette:
     - scheme: default
-      primary: blue   
-      accent: pink
+      primary: blue grey
+      accent: cyan
       toggle:
         icon: material/weather-night
         name: 深色模式
     - scheme: slate
-      primary: blue  
-      accent: pink
+      primary: blue grey 
+      accent: cyan
       toggle:
         icon: material/white-balance-sunny
         name: 浅色模式
@@ -65,7 +65,9 @@ markdown_extensions:
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - https://unpkg.com/glightbox/dist/js/glightbox.min.js
-
+  - https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js
+  - javascripts/config.js # <-- 新增一个配置文件引用
+  
 extra_css:
   - stylesheets/brand.css
   # - stylesheets/extra.css

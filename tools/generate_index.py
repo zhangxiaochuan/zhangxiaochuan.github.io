@@ -14,7 +14,6 @@ FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.S)
 def generate_post_index():
     def make_title_from_filename(filename):
         name = filename[:-3]  # 去掉 .md
-        name = name.replace("-", " ")
         return name
 
     if not os.path.exists(POSTS_DIR):
