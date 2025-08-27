@@ -2,6 +2,7 @@
 title: DeepSeek-Coder工程化方案
 tags:
   - LLM
+  - DeepSeek
 ---
 
 {{ render_tags() }}

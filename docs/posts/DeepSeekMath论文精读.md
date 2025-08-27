@@ -2,6 +2,8 @@
 title: DeepSeekMath论文精读
 tags:
   - LLM
+  - 强化学习
+  - DeepSeek
 ---
 {{ render_tags() }}
 

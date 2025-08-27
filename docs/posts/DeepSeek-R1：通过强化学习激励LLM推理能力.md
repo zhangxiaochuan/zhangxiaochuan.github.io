@@ -3,6 +3,7 @@ title: DeepSeek-R1：通过强化学习激励LLM推理能力
 tags:
   - LLM
   - 强化学习
+  - DeepSeek
 ---
 
 ## 研究动机与背景
