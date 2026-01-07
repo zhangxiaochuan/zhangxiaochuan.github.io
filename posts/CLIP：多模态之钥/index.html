@@ -1,0 +1,752 @@
+<!DOCTYPE html><html lang="zh" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="&lt;p&gt;这里只有冷静思考，没有浮夸喧哗 &lt;/p&gt; 这里只有算法与代码，没有装饰和繁杂">
+      
+      
+        <meta name="author" content="Xiaochuan Zhang">
+      
+      
+        <link rel="canonical" href="https://matrixmind.fun/posts/CLIP%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B9%8B%E9%92%A5/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>CLIP：多模态之钥 - MatrixMind.Fun</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/brand.css">
+    
+      <link rel="stylesheet" href="https://unpkg.com/glightbox/dist/css/glightbox.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-clip" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="MatrixMind.Fun" class="md-header__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MatrixMind.Fun
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLIP：多模态之钥
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="深色模式" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="浅色模式" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m3.55 19.09 1.41 1.41 1.8-1.79-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71 1.8 1.79 1.41-1.41-1.79-1.8M20.45 5l-1.41-1.4-1.8 1.79 1.42 1.42M13 1h-2v3h2M6.76 5.39 4.96 3.6 3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Posts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Projects
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MatrixMind.Fun" class="md-nav__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    MatrixMind.Fun
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Posts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 引言（什么是 CLIP）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 背景及动机（为什么需要 CLIP）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 实现细节（如何训练 CLIP）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 多模态模型的发展脉络
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 多模态模型的发展脉络">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 CLIP 之前的代表性多模态方法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 CLIP 之后的改进与拓展方法
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 应用案例与场景
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/zhangxiaochuan/edit/main/docs/posts/CLIP：多模态之钥.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+  <h1>CLIP：多模态之钥</h1>
+
+<div class="mmf-tags">
+  <span class="mmf-tags-title">标签：</span>
+  <a class="mmf-tag" href="/tags/clip/" title="CLIP">CLIP</a><a class="mmf-tag" href="/tags/多模态/" title="多模态">多模态</a><a class="mmf-tag" href="/tags/llm/" title="LLM">LLM</a>
+</div>
+
+<h2 id="1-clip">1. 引言（什么是 CLIP）<a class="headerlink" href="#1-clip" title="Permanent link">¶</a></h2>
+<p><strong>CLIP</strong>（Contrastive Language-Image Pretraining，对比式语言-图像预训练）是 OpenAI 于 2021 年发布的一种多模态模型。它通过<strong>图像-文本对比学习</strong>同时训练图像编码器和文本编码器，将图像与自然语言映射到<strong>共同的嵌入表示空间</strong>。与传统图像分类模型输出固定类别标签不同，CLIP 接受一张图片和一段文本描述作为输入，输出表示二者语义相关性的分数或距离。换言之，CLIP 能判断任意一张图片与任意一段文字描述是否匹配，而无需将图片限制在预定义的类别集合中。这种设计使 CLIP 能直接利用自然语言作为标签，实现<strong>开放领域</strong>的图像识别与检索。</p>
+<p><strong>模型结构：</strong>CLIP 包含两路编码器：一个图像编码器和一个文本编码器。图像编码器可以采用传统卷积网络（如 ResNet）或视觉Transformer（ViT）提取图像特征；文本编码器通常是 Transformer（类似 GPT-系列）将文本转换为向量表示。在编码器输出之后，分别接一层可学习的线性投影，将图像特征和文本特征投影到同一维度的共享嵌入空间。为了让不同模态的表示直接可比，对应的嵌入向量通常会进行 L2 正则化以约束在单位球面上，这样两个嵌入的内积就对应余弦相似度。CLIP 的<strong>输入</strong>包括一组成对的图像和文本描述<span class="arithmatex">\((I_i, T_i)\)</span>；<strong>输出</strong>则是图像和文本在共同空间中的嵌入向量，以及由此计算出的相似度矩阵。在推理时，我们可以将图像嵌入与任意文本嵌入进行比较，相似度越高表示图片越可能与该文本匹配。通过这种方式，CLIP 能用于开放集的<strong>零样本分类</strong>、跨模态搜索等任务。</p>
+<p><strong>训练目标：</strong> CLIP 的训练任务被定义为：给定一个批次的<span class="arithmatex">\(N\)</span>对图文<span class="arithmatex">\((I_i, T_i)\)</span>，模型需要预测哪些图像和文本是正确匹配的对。具体来说，对于每个图像<span class="arithmatex">\(I_i\)</span>，配对的文本<span class="arithmatex">\(T_i\)</span>应该在所有文本中获得最高的匹配分数；同样每个文本对其配对图像也应得分最高。为此，CLIP 在训练中使用对比学习的策略，最大化真实匹配对在嵌入空间的余弦相似度，最小化不匹配对的相似度。整个训练通过优化一个<strong>对称的跨熵损失函数</strong>来实现上述目标。对于任意一对<span class="arithmatex">\((I_i, T_i)\)</span>，定义嵌入相似度<span class="arithmatex">\(\text{sim}(I_i,T_j)=I_e{(i)} \cdot T_e{(j)}\)</span>（通常为内积，已隐含温度参数缩放），则图像<span class="arithmatex">\(I_i\)</span>对应正确文本<span class="arithmatex">\(T_i\)</span>的概率可表示为：</p>
+<div class="arithmatex">\[
+P_{i\to j} = \frac{\exp(\text{sim}(I_i, T_j)/\tau)}{\sum_{k=1}^N \exp(\text{sim}(I_i, T_k)/\tau)} ,
+\]</div>
+<p>其中<span class="arithmatex">\(\tau\)</span>是<strong>可学习的温度参数</strong>，控制softmax分布的峰度。CLIP 的图像到文本方向损失为所有正确匹配的对数似然：</p>
+<div class="arithmatex">\[
+L_{i2t} = -\sum_{i=1}^N \log \frac{\exp(\text{sim}(I_i, T_i)/\tau)}{\sum_{j=1}^N \exp(\text{sim}(I_i, T_j)/\tau)} .
+\]</div>
+<p>同理，文本到图像的损失为</p>
+<div class="arithmatex">\[
+L_{t2i} = -\sum_{i=1}^N \log \frac{\exp(\text{sim}(I_i, T_i)/\tau)}{\sum_{j=1}^N \exp(\text{sim}(I_j, T_i)/\tau)} .
+\]</div>
+<p><strong>总损失</strong>取两者平均：<span class="arithmatex">\(L = \frac{1}{2}(L_{i2t} + L_{t2i})\)</span>。直观来说，该损失迫使模型将每对正确图文的相似度推高，对每个错误的组合给予低相似度，从而在嵌入空间<strong>拉近</strong>真实匹配的图文向量，<strong>拉远</strong>不相关的图文向量。训练完成后，CLIP 在共同空间学得了图像与文本之间的对齐表示，为各种下游任务提供了<strong>通用且可迁移的特征</strong>。</p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/images/CLIP%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B9%8B%E9%92%A5/1753172709818-d203aaab-3a3e-47ff-98e4-94325820cf2d.png" data-desc-position="bottom"><img alt="" src="../../assets/images/CLIP%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B9%8B%E9%92%A5/1753172709818-d203aaab-3a3e-47ff-98e4-94325820cf2d.png"></a></p>
+<p>图 1：CLIP的整体架构与任务示意。（1）对比式预训练：在每个训练批次，CLIP 接收<span class="arithmatex">\(N\)</span>对图像和文本，将它们分别编码为图像特征<span class="arithmatex">\(I_i\)</span> 和文本特征<span class="arithmatex">\(T_j\)</span>，计算得到<span class="arithmatex">\(N\times N\)</span> 的相似度矩阵<span class="arithmatex">\(I_i \cdot T_j\)</span>。训练目标是让对角线上的真实匹配对（如<span class="arithmatex">\(I_1\)</span>-<span class="arithmatex">\(T_1\)</span>）的相似度高于其他非匹配组合。（2）从类别标签文本构造数据集分类器：将目标数据集的类别名插入模板（如 "A photo of a {object}."）生成文本描述，通过 CLIP 的文本编码器得到各类别的文本嵌入。（3）零样本预测：给定一张待分类图片，用图像编码器获得图像嵌入，与所有类别文本嵌入计算相似度，选择分数最高的类别作为模型预测。</p>
+<h2 id="2-clip">2. 背景及动机（为什么需要 CLIP）<a class="headerlink" href="#2-clip" title="Permanent link">¶</a></h2>
+<p><em>“典型的视觉模型往往各自为战且高度依赖人工标注数据，这限制了它们的通用性和可扩展性”。</em> 在 CLIP 出现之前，计算机视觉领域主流的方法是使用<strong>限定类别</strong>的人工标注数据集（如 ImageNet）训练分类网络。这带来了几大局限：</p>
+<ul>
+<li><strong>数据集狭窄且昂贵</strong>：高质量的标注图像数据集制作成本高且涵盖概念有限，每个数据集只能教会模型一小部分视觉概念。一旦需要识别新类别，就必须收集新数据并重新训练特定模型。</li>
+<li><strong>模型迁移能力弱</strong>：传统监督模型通常<strong>专注单一任务</strong>，难以适应新任务或新领域。例如，用 ImageNet 训练的分类器在未见过的类别上几乎无法直接泛化，需要经过微调才能应用到不同数据集。这使得模型的<strong>通用性和零样本能力</strong>很差。</li>
+<li><strong>鲁棒性问题</strong>：在基准测试上表现优异的模型，在分布外数据或干扰条件下表现会显著下降。研究发现许多监督模型在对抗样本、分布迁移等“压力测试”下性能崩溃。这对模型的实用性和对深度学习方法的可靠性提出质疑。</li>
+</ul>
+<p><strong>多模态对齐的必要性：</strong><strong>为了突破上述局限，研究者认识到需要一种能够利用</strong><strong>海量非结构化数据</strong>的新范式。自然语言作为标签具有无限的灵活性和信息量，可以描述任何视觉概念。如果模型能<strong>直接从网络中丰富的图像-文本对</strong>中学习，就不再局限于人工定义的狭窄类别集合。在 NLP 领域，预训练语言模型（如 GPT 系列）正是通过在海量文本上学习通用表示，实现了跨任务的零样本迁移。这种启发促使视觉领域探索类似的方法：将<strong>自然语言监督</strong>引入视觉模型训练，以获得更具泛化能力的视觉表示。</p>
+<p><strong>CLIP 的范式转变：</strong><strong>CLIP 正是在这一背景下提出，代表了一种“预训练+提示”的新范式，被誉为视觉领域的</strong><strong>“GPT 时刻”</strong>。不同于传统直接预测固定标签，CLIP 将<strong>文字嵌入作为输出空间</strong>，使模型可以通过输入自然语言指令来执行识别任务。这样一来，<strong>零样本学习</strong>成为可能：给定全新的分类任务，只需提供各类别的文本描述，CLIP 即可在无需额外训练的情况下完成分类。例如，OpenAI 报告显示，CLIP 的 ResNet-50 模型在<strong>未使用任何 ImageNet 训练样本</strong>的情况下，零样本分类准确率匹配了原始ResNet-50在 ImageNet 上的水平。这意味着无需为每个新任务收集标注数据，模型即可通过语言接口灵活泛化到新领域。</p>
+<p>此外，CLIP 引入了<strong>Prompt Engineering（提示工程）</strong> 的概念来提升零样本性能。具体做法是为文本编码器设计合理的模板（如在类别名前添加"a photo of a ..."，而非直接使用单词），以提供更多上下文。这种技巧可以有效提高模型判别细粒度类别的准确性。研究表明，相比直接使用单独的类名，精心设计提示和集成多个提示可使零样本分类准确率提高约5个百分点。</p>
+<p>总之，CLIP 带来的<strong>范式转移</strong>在于：模型不再局限于预定输出空间，而是通过对齐图像和自然语言，实现“一模多用”。这极大提升了视觉模型的<strong>通用性、可迁移性和鲁棒性</strong>。在超过30个各异的数据集上，CLIP 的零样本迁移性能与有监督模型相当，且对分布偏移更加稳健。可以说，CLIP 将计算机视觉从专门的封闭任务拓展为开放词汇空间，从而开启了跨模态理解的新篇章。</p>
+<h2 id="3-clip">3. 实现细节（如何训练 CLIP）<a class="headerlink" href="#3-clip" title="Permanent link">¶</a></h2>
+<p><strong>训练数据：</strong> CLIP 的成功很大程度上依赖于大规模的训练语料。OpenAI 使用了来自互联网上的约 <strong>4亿对图像-文本对</strong>作为训练数据。这些图文对并非人工标注，而是利用网络上的现成描述（如图片的标题、周边文本等）自动收集，因此数据覆盖面极广但也相对嘈杂。与精心清洗的小型数据集不同，CLIP 大胆采用了<strong>海量弱标注数据</strong>，并凭借数量取胜：即使包含噪声，丰富多样的样本也足以让模型学到稳健的图文映射关系。事实证明，在如此规模的数据上训练，对过拟合的担忧反而降低，因此无需使用过多复杂的正则化或数据增广技巧。</p>
+<p><strong>模型架构：如前所述，CLIP 由独立的图像编码器和文本编码器构成，它们在训练过程中权重不共享</strong>。OpenAI 尝试了两类图像编码器架构：一是改进版的 ResNet（例如 ResNet-50x4、x16 等宽度加大的变体）；二是 Vision Transformer (ViT) 系列。ResNet 版本融入了一些优化（如ResNet-D和抗混叠池化）以提升性能；ViT 版本则基本沿用原始 ViT 的设计，只在拼接Patch嵌入后增加了一层 LayerNorm 并调整初始化策略。文本编码器使用一个12层、宽度512的 Transformer，参数约6300万。文本首先经过 Byte Pair Encoding (BPE) 得到词序列（词表大小约49万），序列长度上限为76。在Transformer编码时，采用与GPT类似的架构（包含[SOS]和[EOS]标记，最终抽取 [EOS] 位的顶层隐状态作为文本表示）。需要注意，文本编码器采用了<strong>单向掩码自注意</strong>（即因果Mask），以便保持与预训练语言模型初始化兼容的可能性。图像和文本编码器各自输出的高维特征（如图像特征维度<span class="arithmatex">\(d_i\)</span>，文本特征维度<span class="arithmatex">\(d_t\)</span>）通过线性层投影到统一的嵌入维度<span class="arithmatex">\(d_e\)</span>，再经逐行<span class="arithmatex">\(L_2\)</span>正则化，得到图像嵌入<span class="arithmatex">\(I_e\)</span>和文本嵌入<span class="arithmatex">\(T_e\)</span>。最终计算两者的点积相似度，再乘以<span class="arithmatex">\(\exp(t)\)</span>作为 logits。这里的<span class="arithmatex">\(t\)</span>即<strong>可学习温度</strong>参数的对数值，模型会自动调整它来控制分布的熵高低。</p>
+<p><strong>训练流程</strong>：CLIP 的训练本质上是在做一个大型的 N 对 N 的多分类任务。每个训练步从数据集中取出<span class="arithmatex">\(N\)</span>对图文，送入编码器得到<span class="arithmatex">\(N\)</span>个图像嵌入<span class="arithmatex">\(I_e\)</span>和<span class="arithmatex">\(N\)</span>个文本嵌入<span class="arithmatex">\(T_e\)</span>。计算所有图像-文本嵌入对的余弦相似度，形成一个<span class="arithmatex">\(N\times N\)</span>的相似度矩阵。理想情况下，该矩阵的主对角线元素（表示匹配的图文对）应远大于非对角元素（表示错配的组合）。为了实现这一点，采用上述对称跨熵损失<span class="arithmatex">\(L\)</span>来更新模型参数。每个批次的损失由图像作为查询和文本作为查询两个方向的跨熵之和构成。在实现上，可将相似度矩阵的第<span class="arithmatex">\(i\)</span>行通过 softmax 转换为图像<span class="arithmatex">\(I_i\)</span>对各文本属于匹配的概率分布（第<span class="arithmatex">\(i\)</span>行正确标签就是位置<span class="arithmatex">\(i\)</span>），并对数损失；第<span class="arithmatex">\(i\)</span>列同理表示文本<span class="arithmatex">\(T_i\)</span>对各图像的匹配概率并损失。两个损失平均即为最终目标。OpenAI 在论文中提供了核心训练逻辑的伪代码：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 图像编码器 - ResNet 或 ViT</span>
+<span class="c1"># 文本编码器 - Transformer（GPT样架构）</span>
+<span class="c1"># I[n, ...]  - 包含 n 张图像的批次</span>
+<span class="c1"># T[n, ...]  - 包含 n 段文本的批次（与图像一一对应）</span>
+<span class="c1"># W_i[d_i, d_e] - 图像特征到嵌入空间的投影矩阵</span>
+<span class="c1"># W_t[d_t, d_e] - 文本特征到嵌入空间的投影矩阵</span>
+<span class="c1"># t    - 可学习的温度参数 (log-scale)</span>
+<span class="n">I_f</span> <span class="o">=</span> <span class="n">image_encoder</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>        <span class="c1"># 提取图像特征，形状 [n, d_i]</span>
+<span class="n">T_f</span> <span class="o">=</span> <span class="n">text_encoder</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>         <span class="c1"># 提取文本特征，形状 [n, d_t]</span>
+<span class="n">I_e</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">I_f</span> <span class="o">@</span> <span class="n">W_i</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># 投影并 L2 归一化图像嵌入 [n, d_e]</span>
+<span class="n">T_e</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">T_f</span> <span class="o">@</span> <span class="n">W_t</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># 投影并 L2 归一化文本嵌入 [n, d_e]</span>
+<span class="n">logits</span> <span class="o">=</span> <span class="n">I_e</span> <span class="o">@</span> <span class="n">T_e</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>       <span class="c1"># 计算图文相似度矩阵并应用温度缩放 [n, n]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">loss_i</span> <span class="o">=</span> <span class="n">cross_entropy_loss</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># 图像-&gt;文本 的交叉熵损失</span>
+<span class="n">loss_t</span> <span class="o">=</span> <span class="n">cross_entropy_loss</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># 文本-&gt;图像 的交叉熵损失</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss_i</span> <span class="o">+</span> <span class="n">loss_t</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>    <span class="c1"># 对称损失取平均</span>
+</code></pre></div>
+<p>代码说明：<code>logits[i][j] =</code><span class="arithmatex">\(I_e^{(i)} \cdot T_e^{(j)} * \exp(t)\)</span>表示第<span class="arithmatex">\(i\)</span>张图与第<span class="arithmatex">\(j\)</span>段文本的相似度分数。<code>labels = arange(n)</code> 生成0到<span class="arithmatex">\(n-1\)</span>的标签向量，表示第<span class="arithmatex">\(i\)</span>行（图像<span class="arithmatex">\(I_i\)</span>）的正确匹配文本索引为<span class="arithmatex">\(i\)</span>，第<span class="arithmatex">\(j\)</span>列（文本<span class="arithmatex">\(T_j\)</span>）的正确匹配图像索引为<span class="arithmatex">\(j\)</span>。<code>loss_i</code> 对每一行执行 softmax 及交叉熵，确保<span class="arithmatex">\(I_i\)</span>在第<span class="arithmatex">\(i\)</span>列（匹配<span class="arithmatex">\(T_i\)</span>）取得最大概率；<code>loss_t</code> 类似按列计算，确保<span class="arithmatex">\(T_i\)</span>匹配<span class="arithmatex">\(I_i\)</span>的概率最大。两个损失平均即得到对比学习的目标。这个目标等价于 InfoNCE 损失的一个变体：最大化匹配样本的对数似然，同时最小化错配样本的相似度。</p>
+<p><strong>训练超参数：CLIP 的训练规模非常大，OpenAI 在论文中提到使用了 32,768 的超大批次进行对比学习，并训练了 32 个 epoch。优化器采用 Adam 配合余弦退火学习率调度，初始学习率等超参通过在ResNet-50上网格搜索确定，然后针对更大模型缩放调整。温度参数 </strong><span class="arithmatex">\(\tau\)</span><strong> 初始化为 0.07（对应 </strong><span class="arithmatex">\(t=\ln(0.07)\)</span><strong>），并在训练中作为参数直接优化（限制 </strong><span class="arithmatex">\(|t|&lt;\ln(100)\)</span><strong> 以保证稳定性）。如此大的批次和数据，使得模型训练需要巨大的算力支撑（据报道OpenAI使用了256个V100 GPU并行训练2周以上）。为加速训练和节省显存，作者使用了混合精度和梯度检查点等技巧。尽管实现复杂，但由于对比学习不需要人工标签，这一过程充分利用了海量数据的监督信号，使模型学习到高度可迁移的图像表示</strong>。</p>
+<h2 id="4">4. 多模态模型的发展脉络<a class="headerlink" href="#4" title="Permanent link">¶</a></h2>
+<p>CLIP 的提出既有前人的技术铺垫，也引领了后续一系列扩展改进。下面简要梳理 CLIP <strong>之前</strong>和<strong>之后</strong>有代表性的多模态模型方法，以及它们的特点与进展。</p>
+<h3 id="41-clip">4.1 CLIP 之前的代表性多模态方法<a class="headerlink" href="#41-clip" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>VSE++ (2018)</strong>：全称为 Visual-Semantic Embeddings++，是早期图文联合嵌入的方法。VSE++ 提出了在<strong>三元组损失</strong>中引入<strong>难负样本挖掘</strong>，强化错配图文对的区分度，从而显著提高了图像描述检索的精度。模型使用独立的图像和文本编码（如预训练ResNet提取图像全局特征，LSTM提取文本特征），通过正匹配对的距离最小化、随机负样本对的距离最大化来学习共同空间表示。实验表明，相比不考虑难负例的基线，VSE++ 在 MS-COCO、Flickr30K 等图文检索任务的评价指标上有大幅提升。它证明了<strong>对比损失+难样本挖掘</strong>在跨模态检索中的有效性，是 CLIP 等后续工作的早期启发之一。</li>
+<li><strong>ViLBERT (2019)</strong>：是将 BERT 扩展到视觉和语言双模态的模型。ViLBERT 采用<strong>Two-Stream（双流）架构</strong>，即图像和文本各有一套自注意力编码器，二者在若干层通过<strong>Co-attention（协同注意）</strong><strong>交互。具体实现上，图像通常以</strong><strong>区域特征</strong>表示（利用预训练的目标检测模型如 Faster R-CNN 提取多个对象区域的视觉特征），文本以词序列表示，两路在中间层通过特殊的互注意力单元让图像区域和词语交互计算关注权重。这种结构在保持单模态编码器各自预训练能力的同时，实现了细粒度的跨模态对齐。ViLBERT 在VQA（视觉问答）、VR（视觉推理）等任务上取得当时最佳成绩，展示了<strong>双流跨模态Transformer</strong>的强大建模能力。</li>
+<li><strong>VisualBERT (2019)</strong>：与 ViLBERT 不同，VisualBERT 采用<strong>Single-Stream（单流）架构</strong>，将图像和文本信息直接拼接后输入同一个 Transformer 编码器。它相当于在原始 BERT 模型中加入视觉词：每幅图像用若干对象区域特征向量表示，并附加上类型嵌入以区分视觉/文本模态，再与文本序列一起输入Transformer。Transformer 自注意力机制能够在单流架构中自动学习图像区域与单词之间的对应关系。VisualBERT 通常以 COCO 等图文描述数据集进行预训练（任务包括图文匹配判别、遮罩语言模型等），然后微调到下游任务。它在图文检索、VQA等任务上取得了很强的性能，证明了<strong>联合编码</strong>多模态特征的可行性。</li>
+<li><strong>UNITER (2020)</strong>：全称 UNiversal Image-TExt Representation，是单流架构的进一步发展。UNITER 将多个图文数据集（COCO, Visual Genome, Conceptual Captions 等共900万对图文）联合预训练，通过多任务学习（包括遮罩语言建模、遮罩图像区域预测、图文对齐判别、词-区域对齐等任务）来提升跨模态表示的鲁棒性。与VisualBERT相比，UNITER 数据更大且训练目标更丰富，使其在下游任务（如VQA、图文检索、推理等）上全面超越先前模型。当时UNITER 在多项Benchmark上刷新SOTA，被视为跨模态预训练的一座里程碑。它表明，通过<strong>联合大规模数据和多任务训练</strong>，可以学到通用的跨模态表示，为后来的CLIP提供了经验借鉴。</li>
+</ul>
+<h3 id="42-clip">4.2 CLIP 之后的改进与拓展方法<a class="headerlink" href="#42-clip" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>ALIGN (2021, Google)</strong>：与 CLIP 几乎同期出现的一项工作，全称“A Large-scale Image and Noisy Text embedding”。ALIGN 的核心思想与 CLIP 相似：采用<strong>双塔式</strong>（dual-encoder）的图像编码器+文本编码器结构，优化跨模态对比损失，将图文映射到共同空间。其突出亮点在于利用了规模更大的 <strong>1.8B（十八亿）对图文数据</strong>，这些数据来自网络爬取的图像alt文本，未经严格清洗。谷歌研究人员证明，即使数据非常嘈杂，极大的数量也能弥补质量不足，从而训练出更强的模型。ALIGN 使用 EfficientNet-L2 作为图像编码 backbone、BERT-Large 作为文本编码，模型参数规模高达8亿。实验显示，ALIGN 在图文检索等任务上比同时期的 CLIP 更胜一筹，在 Flickr30K、COCO 检索中取得新的零样本 SOTA。ALIGN 表明，简单的对比学习策略在数据和模型规模上仍有巨大潜力，通过大数据“粗养”，跨模态模型性能可以进一步提升。</li>
+<li><strong>SLIP (2021, Facebook/Berkeley)</strong>：全称“Self-Supervision meets Language-Image Pre-training”，提出将<strong>自监督视觉预训练</strong>与 CLIP 的图文对比学习相结合。SLIP 在训练时增加了一支 SimCLR 风格的图像-图像对比损失：对每张图像除原始视图外再随机数据增强生成另一视图，两视图通过SimCLR损失学习图像内部表征。同时，第三视图与文本构成原始CLIP损失。最终总损失是图像-文本对比和图像-图像自监督的加权和。通过多任务训练，SLIP 获得的图像特征比单纯CLIP更强，在相同数据上 SLIP 在零样本分类、线性评估、微调三种评测下均超过 CLIP。这说明加入图像自监督信号能提高图像编码器的泛化性能，即使语言监督数据规模不变，也能进一步提升表示质量。SLIP 特别有利于中等规模数据集的训练情境，被认为是对比学习和自监督学习的有效融合探索。</li>
+<li><strong>BLIP (2022, Salesforce)</strong>：全称“Bootstrapping Language-Image Pre-training”，旨在统一<strong>视觉-语言理解和生成</strong>两类任务的预训练框架。与 CLIP 等只针对理解任务不同，BLIP 通过设计多元损失，既适用于检索、VQA等判别任务，又能用于图像描述生成等生成任务。其创新在于<strong>自举式数据优化</strong>：先用一个现有图像描述模型（captioner）为网络图文数据生成更准确的描述，再用过滤器去除噪声描述。通过这种方式，BLIP 在利用 web 噪声数据时获得更高的信噪比。预训练中，BLIP 同时优化图文对比损失、图文匹配分类损失以及图像条件下的语言模型损失，实现单一模型兼具判别和生成能力。实验表明，BLIP 在多项视觉语言任务上取得当时最好成绩（如零样本图文检索提升+2.7% R@1，图像描述提升+2.8 CIDEr，VQA提升+1.6%）。并且无需微调就能将模型迁移到视频-语言任务上取得优异表现。BLIP 是多模态模型朝<strong>通用多任务</strong>方向发展的重要一步。</li>
+<li><strong>Florence (2021, Microsoft)</strong>：代号为“Florence”，是微软提出的新一代视觉-语言基础模型。Florence 的图像-文本预训练数据集规模达 <strong>9亿对</strong>（称为 FLD-900M），模型采用 CLIP 类似的双塔结构，但使用更大的 CoSwinTransformer 作为图像编码器、12层Transformer作为文本编码器，总参数高达 8.93亿。训练方法上，引入了一种统一对比学习损失（UniCL），将图像-文本对映射为 (x, t, y) 三元组，其中 y 是由哈希得到的“语义标签”，所有映射到同一 y 的对被视为正例，实现<strong>多对多</strong>的对比学习。此外，Florence 通过两阶段训练缓解提示模板带来的不一致影响，先用带随机提示的数据训练，再二次训练去除提示数据。得益于超大规模数据和模型，Florence 在各项任务上取得突出成绩：零样本 ImageNet 分类 <strong>83.7%</strong> 准确率，较当时 SOTA 提升5.6个百分点；跨12个分类任务9个居首，跨模态检索也全面超越先前模型。Florence 还通过适配头扩展实现了物体检测、VQA等任务的领先表现。可以将其视作CLIP思路在工业级数据和模型规模上的极致延伸，展示了<strong>基础模型</strong>在视觉领域的威力。</li>
+<li><strong>Flamingo (2022, DeepMind)</strong>：Flamingo 是一种支持<strong>少样本学习</strong>的视觉语言模型系列。它的目标是使模型能通过几幅图像和对应文本的示例“上下文”快速适应新任务。Flamingo 的架构巧妙地<strong>衔接预训练的单模态模型</strong>：将一个强大的图像编码器（如预训的CLIP视觉 backbone）和一个大型语言模型（如预训Transformer LM）连接起来。具体实现上，在冻结原有单模态模型的基础上，插入若干<strong>跨注意力层</strong>，让语言模型能够以图像编码器输出作为键值来关注图像内容。这样，Flamingo 可以处理任意交错的图像和文本序列输入，并在生成答案时灵活地参考视觉信息。训练时，Flamingo 利用大量图文交错的数据进行序列建模，使其具备<strong>上下文推理</strong>能力。在评测中，一个单一的Flamingo模型通过在提示中提供少量示例（无需梯度更新），就在多项开放式任务上达到新的 SOTA：例如在各种 VQA、图像字幕、视觉推理基准上，Flamingo 的 few-shot 表现超越了那些使用大量标注微调的专门模型。这证明了通过<strong>融合多模态预训练和提示学习</strong>，模型可以获得惊人的跨任务泛化能力。Flamingo 标志着跨模态模型开始迈向类 GPT-3 的<strong>提示驱动</strong>范式，在多模态 few-shot 学习方面取得突破。</li>
+</ul>
+<h2 id="5">5. 应用案例与场景<a class="headerlink" href="#5" title="Permanent link">¶</a></h2>
+<p>CLIP 作为多模态基础模型，在学术研究和工业应用中展现了广泛的用途。以下列举若干典型的应用场景：</p>
+<ul>
+<li><strong>零样本图像分类：</strong>这可能是 CLIP 最引人注目的应用之一。利用 CLIP，我们可以在没有针对目标任务的专门训练数据情况下，对新领域的图像进行分类。具体做法如前文所述：针对给定数据集的类别集合，先构造每个类别的文本描述（通常使用提示模板，如 "A photo of a cat." 等），通过 CLIP 文本编码器得到各类别的嵌入。对于待分类图片，用图像编码器获得图像嵌入，计算与所有类别文本嵌入的相似度。图像被归入相似度最高的那一类，从而完成预测。OpenAI 报告中，CLIP 在包含1000类的 ImageNet 上零样本分类达到与有监督ResNet-50相当的 76.2% Top-1 准确率；在包括 OCR、行为识别、细粒度分类等30多个数据集上，零样本 CLIP 模型的性能大多接近甚至超过经过该数据集微调的监督模型。值得一提的是，通过精心挑选和扩充提示（prompt engineering）以及对多个提示结果取平均，零样本分类精度还可进一步提升。这一能力在现实中具有重要意义：无需收集新数据即可快速扩展模型到新的识别任务，大幅提高了视觉系统的灵活性和实用性。</li>
+<li><strong>图文检索与匹配：</strong>CLIP 提供了一个自然的跨模态检索方案：利用共同的嵌入空间，可以将文本作为查询搜索图片，或反过来以图像查询相关文本。具体而言，先对一大批图片计算并存储 CLIP 图像特征向量；给定一段查询文本，用文本编码器得到向量，在数据库中检索最近邻的图像向量，即可返回与该描述最匹配的图片（文本-&gt;图像检索）。同样，可以用一张图片编码后在海量文本向量中查找最相似者，实现以图找文（图像-&gt;文本检索）。由于 CLIP 的训练涵盖了广泛的视觉语义概念，它能处理开放域的描述。例如用一句话“猫躺在沙发上”检索，结果往往是真正含有猫和沙发的图片，即使这些图片可能不在任何传统标注数据集中。这为构建多媒体搜索引擎提供了新工具。一些开源项目（如 <strong>CLIP Retrieval</strong>）已经实现了利用 CLIP 对上亿图像建立索引、实现文本搜图的系统。实验显示，相比基于标签的旧方法，CLIP 的检索结果在语义相关性上有明显提升。因此，CLIP 被广泛用于视觉语义检索、相似图片推荐、内容审核（找出不符合描述的图片）等应用中。</li>
+<li><strong>文本引导的图像生成：</strong>CLIP 还能用来提升图像生成模型的效果，即通过 CLIP 提供的语义反馈来指导生成过程。一个著名范例是 VQGAN+CLIP：VQGAN 是生成模型，CLIP 则作为“审评者”。生成模型不断产生产出候选图像，CLIP 负责判断这些图像与目标文本描述的匹配程度（计算 CLIP 相似度）。然后利用这个相似度作为优化信号，反向更新生成模型的图像 latent 使之更接近文本语义。通过 CLIP 的引导，VQGAN 能逐步绘制出符合文字描述的图像。人们用这种方法创造了许多惊艳的 AI 艺术作品，也验证了 CLIP 嵌入空间对高层语义的把握。除了 VQGAN，扩散模型等生成技术也借鉴类似思路，如在生成过程中计算生成图像与目标文本的 CLIP 得分并加权融入采样过程，能够提升生成图像与文本的相关性和写实度。实际上，OpenAI 的 DALLE-2 模型就利用了 CLIP：先训练一个将图像编码为 CLIP 空间的先验模型，然后引导扩散生成。因此，CLIP 不仅擅长判别，还可以作为跨模态的评价函数嵌入到生成模型中，帮助实现“AI 作画”等应用。</li>
+<li><strong>通用特征提取与下游微调：</strong>由于 CLIP 学到了强大的视觉表征，不少应用直接把 CLIP 的图像编码器当作预训练骨干，用于传统视觉任务上以提升效果。例如，将 CLIP 的图像特征用作下游模型的输入，再在小规模有标签数据上训练一个轻量分类器（即线性探针），往往比从头训练或使用ImageNet预训模型得到更高精度。OpenAI 的研究显示，在有限数据场景下，CLIP 比同等精度的有监督模型更加稳健。另外，在目标检测、图像分割等任务中，也有工作将 CLIP 特征融入（例如为每类目标提供文本描述嵌入，辅助检测器识别开放集目标）。CLIP 的文本编码器同样可以用来提取句子嵌入，在多模态对话、图文问答系统中与图像特征配合工作。甚至在机器人领域，CLIP 被用于感知模块：输入摄像头画面和指令，CLIP 计算相似度帮助机器人理解要抓取的物体类别。总体而言，CLIP 提供了一个通用嵌入空间，许多任务都可以在该空间中利用相似度度量来替代或辅助传统的分类器，从而实现更强的零样本或少样本能力。随着开源实现和模型权重的发布，工程师和研究者已将 CLIP 集成到各种应用中，极大加速了多模态 AI 技术在现实中的落地。</li>
+</ul>
+<p><strong>结语：</strong> OpenAI 的 CLIP 模型开创了图像与自然语言联合预训练的新范式。通过对比学习，CLIP 获取了跨模态对齐的强表征能力，在无需特定训练数据的情况下就能执行零样本图像识别和检索。其后的大量研究和应用进一步验证了这一思路的价值——结合海量数据和语言监督，视觉模型的通用性与智能水平取得了质的飞跃。可以预见，随着更大规模的多模态模型（如 Flamingo、GPT-4V 等）的出现，人工智能系统将能以更接近人类的方式理解和联通视觉与语言信息，为多模态信息处理和决策带来前所未有的能力提升。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "toc.follow", "navigation.top", "content.code.copy", "content.action.edit", "content.tabs.link", "search.highlight", "search.suggest", "header.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/glightbox/dist/js/glightbox.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

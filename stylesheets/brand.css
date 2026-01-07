@@ -1,0 +1,87 @@
+/* 顶部栏和按钮轻定制，保持 Material 的简洁感 */
+:root {
+  --mmf-hero-maxw: 860px;
+}
+
+.mmf-hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem 1rem;
+  max-width: var(--mmf-hero-maxw);
+  margin: 0 auto;
+}
+
+.mmf-hero .logo {
+  width: 160px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.mmf-hero h1 {
+  font-size: 2.2rem;
+  margin: 0.6rem 0;
+}
+
+.mmf-hero p.sub {
+  font-size: 1.05rem;
+  opacity: .85;
+  margin: .2rem auto 1.2rem auto;
+}
+
+.mmf-actions {
+  display: inline-flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mmf-btn {
+  display: inline-block;
+  padding: .55rem 1.1rem;
+  border-radius: .6rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mmf-btn.primary {
+  background: linear-gradient(135deg, #3f51b5 0%, #ec407a 100%);
+  /* background: var(--md-primary-fg-color); */
+  color: #fff;
+}
+
+.mmf-btn.ghost {
+  border: 1px solid var(--md-primary-fg-color);
+  color: var(--md-primary-fg-color);
+}
+
+/* 卡片三列（自适应） */
+.mmf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: var(--mmf-hero-maxw);
+  margin: 1.5rem auto 0 auto;
+}
+
+.mmf-card {
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: .8rem;
+  padding: 1rem;
+}
+.mmf-card h3 { margin: .2rem 0 .4rem 0; }
+.mmf-card p  { margin: 0; opacity: .85; }
+
+.mmf-tags {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .4rem;
+  margin: .4rem 0 1rem 0;
+}
+.mmf-tags-title { opacity: .75; font-size: .9rem; margin-right: .25rem; }
+a.mmf-tag {
+  display: inline-block;
+  padding: .12rem .6rem;
+  border-radius: 999px;
+  border: 1px solid var(--md-primary-fg-color);
+  color: var(--md-primary-fg-color);
+  text-decoration: none;
+  font-size: .82rem; font-weight: 600;
+}
+a.mmf-tag:hover { background: var(--md-primary-fg-color); color: #fff; }

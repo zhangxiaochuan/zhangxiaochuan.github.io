@@ -1,0 +1,1273 @@
+<!DOCTYPE html><html lang="zh" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="&lt;p&gt;这里只有冷静思考，没有浮夸喧哗 &lt;/p&gt; 这里只有算法与代码，没有装饰和繁杂">
+      
+      
+        <meta name="author" content="Xiaochuan Zhang">
+      
+      
+        <link rel="canonical" href="https://matrixmind.fun/posts/DeepSeek-V3%E6%98%AF%E5%A6%82%E4%BD%95%E7%82%BC%E6%88%90%E7%9A%84/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>DeepSeek-V3是如何炼成的 - MatrixMind.Fun</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/brand.css">
+    
+      <link rel="stylesheet" href="https://unpkg.com/glightbox/dist/css/glightbox.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-model" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="MatrixMind.Fun" class="md-header__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MatrixMind.Fun
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DeepSeek-V3是如何炼成的
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="深色模式" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="浅色模式" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m3.55 19.09 1.41 1.41 1.8-1.79-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71 1.8 1.79 1.41-1.41-1.79-1.8M20.45 5l-1.41-1.4-1.8 1.79 1.42 1.42M13 1h-2v3h2M6.76 5.39 4.96 3.6 3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Posts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Projects
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MatrixMind.Fun" class="md-nav__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    MatrixMind.Fun
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Posts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 模型结构（Model）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 模型结构（Model）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-multihead-latent-attentionmla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Multi‑Head Latent Attention（MLA）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-deepseekmoe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 DeepSeekMoE（包含共享专家与路由专家）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-auxlossfree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 负载均衡：Aux‑loss‑free 与节点限制路由
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 归一化、激活、位置编码与分词器
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 训练数据（Data）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 训练数据（Data）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 规模与构成
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 清洗与去重
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 文档打包与填充策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-fim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 FIM 中间填空
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 分词器与边界偏置缓解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-pretraining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 预训练（Pre‑training）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 预训练（Pre‑training）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-clm-mtp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 训练目标：CLM 与 MTP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 模型与训练配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 学习率与批大小调度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-yarn-128k" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 长上下文扩展（YaRN，至 128K）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 训练稳定性与成本
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-posttraining-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 后训练与对齐（Post‑training &amp; Alignment）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 后训练与对齐（Post‑training &amp; Alignment）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 有监督指令微调（SFT）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-rlhfgrpo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 人类反馈强化学习（RLHF，GRPO）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 基础设施与工程优化（Infrastructure）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 基础设施与工程优化（Infrastructure）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 集群与总体并行策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-dualpipe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 DualPipe：通信与计算的深度重叠
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-alltoall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 高效 all‑to‑all 与显存优化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.3 高效 all‑to‑all 与显存优化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#all-to-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        高效 all-to-all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        显存优化
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-fp8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 FP8 混合精度训练的关键细节
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.4 FP8 混合精度训练的关键细节">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fp8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FP8 格式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        关键优化
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-prefill-decode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 推理部署：Prefill 与 Decode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.5 推理部署：Prefill 与 Decode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefill 阶段（并行填充上下文）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decode 阶段（自回归逐步生成）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 超参配置速查
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/zhangxiaochuan/edit/main/docs/posts/DeepSeek-V3是如何炼成的.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+  <h1>DeepSeek-V3是如何炼成的</h1>
+
+<h2 id="1-model">1. 模型结构（Model）<a class="headerlink" href="#1-model" title="Permanent link">¶</a></h2>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/images/DeepSeek-V3%E6%98%AF%E5%A6%82%E4%BD%95%E7%82%BC%E6%88%90%E7%9A%84/1755756933148-d3d4a5fa-db86-4b5e-8c76-fb7ec6b19047.png" data-desc-position="bottom"><img alt="" src="../../assets/images/DeepSeek-V3%E6%98%AF%E5%A6%82%E4%BD%95%E7%82%BC%E6%88%90%E7%9A%84/1755756933148-d3d4a5fa-db86-4b5e-8c76-fb7ec6b19047.png"></a></p>
+<p>DeepSeek‑V3 在经典 Transformer 干线上引入两大关键模块：用于降低 KV cache 与激活开销的 MLA，以及用于扩大“总容量、保持计算稀疏”的 DeepSeekMoE。总体目标是在同等算力预算下实现更强的可扩展性与更低的推理成本。</p>
+<h3 id="11-multihead-latent-attentionmla">1.1 Multi‑Head Latent Attention（MLA）<a class="headerlink" href="#11-multihead-latent-attentionmla" title="Permanent link">¶</a></h3>
+<p><strong>核心思想：</strong> 对注意力中的<span class="arithmatex">\(K,V\)</span>先做联合低秩压缩，仅缓存小维度潜变量，再在需要时上投影重构；对<span class="arithmatex">\(Q\)</span>也做低秩压缩以降低激活内存。位置编码采用 RoPE，并在<span class="arithmatex">\(K\)</span>的一部分维度上“解耦”为位置分量，使 RoPE 仅作用到被指定的子维上。</p>
+<ul>
+<li>设每头维度为<span class="arithmatex">\(d_h\)</span>，将输入隐藏态<span class="arithmatex">\(h_t\)</span>投影为紧凑潜变量<span class="arithmatex">\(c_t^{KV}\in\mathbb R^{d_c}\)</span>，随后通过上投影得到<span class="arithmatex">\(K,V\)</span>；<span class="arithmatex">\(Q\)</span>类似压缩到<span class="arithmatex">\(d_c^{q}\)</span>再上投影得到计算用的查询。</li>
+<li>在<span class="arithmatex">\(K\)</span>的构造中，将潜变量分为内容分量与位置分量，后者施加 RoPE 旋转后再与内容拼接，得到最终<span class="arithmatex">\(K\)</span>。推理时仅需缓存<span class="arithmatex">\(c_t^{KV}\)</span>与小维度的位置分量，显著降低 KV cache。</li>
+<li>注意力仍按<span class="arithmatex">\(A(Q,K,V)=\mathrm{softmax}(QK^\top/\sqrt{d}),V\)</span>计算，但<span class="arithmatex">\(Q,K,V\)</span>来自上述压缩/解耦流程。</li>
+</ul>
+<p><strong>经验设定（示例）：</strong><span class="arithmatex">\(n_h=128\)</span>、<span class="arithmatex">\(d_h=128\)</span>、<span class="arithmatex">\(d_c=512\)</span>、<span class="arithmatex">\(d_c^{q}=1536\)</span>，解耦位置子维约每头<span class="arithmatex">\(64\)</span>。这些设定在长上下文与内存占用间取得良好平衡。</p>
+<h3 id="12-deepseekmoe">1.2 DeepSeekMoE（包含共享专家与路由专家）<a class="headerlink" href="#12-deepseekmoe" title="Permanent link">¶</a></h3>
+<p><strong>结构要点：</strong></p>
+<ul>
+<li>自第 4 层起，FFN 基本被 MoE 取代。每层包含<span class="arithmatex">\(1\)</span>个<strong>共享专家</strong>（所有 token 始终激活）与<span class="arithmatex">\(256\)</span>个<strong>路由专家</strong>（按路由选择）。</li>
+<li>每个 token 选择 Top‑K 个路由专家（如<span class="arithmatex">\(K=8\)</span>），与共享专家共同参与计算，输出为加权和：</li>
+</ul>
+<div class="arithmatex">\[h'_t = f_{\text{shared}}(u_t) + \sum_{r \in \mathcal S_t} G_{t,r}\, g_r(u_t)\]</div>
+<p>其中<span class="arithmatex">\(f_{\text{shared}}\)</span>为共享专家，<span class="arithmatex">\(g_r\)</span>为被选路由专家，<span class="arithmatex">\(G_{t,r}\)</span>为门控权重。</p>
+<blockquote>
+<p><span class="arithmatex">\(G_{t,r}\)</span>门控权重的计算方式为：</p>
+<ol>
+<li><strong>计算路由 logits：</strong></li>
+</ol>
+<div class="arithmatex">\[z_{t,r} = (W_{\text{router}} u_t)_r + b_r\]</div>
+<p>其中<span class="arithmatex">\(W_{\text{router}}\)</span>是路由器的权重矩阵，<span class="arithmatex">\(b_r\)</span>是对应专家的偏置项。</p>
+<ol>
+<li><strong>选择 top-k 专家：</strong><br>
+对<span class="arithmatex">\(z_{t,r}\)</span>进行排序，取前8个最大的专家作为候选（DeepSeek-V3 里是 8 个路由专家 + 1 个共享专家）。</li>
+<li><strong>归一化得到门控权重：</strong></li>
+</ol>
+<div class="arithmatex">\[G_{t,r} = \frac{\exp(z_{t,r})}{\sum_{r' \in \mathcal{S}_t}\exp(z_{t,r'})}, \quad r \in \mathcal{S}_t\]</div>
+<p>这里<span class="arithmatex">\(\mathcal{S}_t\)</span>表示 token<span class="arithmatex">\(t\)</span>激活的专家集合，未被选中的专家权重直接置为 0。
+</p>
+</blockquote>
+<p>专家内部多采用轻量的 SwiGLU 前馈结构（中间维相对密集 FFN 明显缩小），提升单位显存下的专家并行度。</p>
+<p><strong>直观理解：</strong> 共享专家提供稳健的“通用能力底座”，路由专家承载“细粒度领域专长”；两者叠加使单位计算的“有效容量”得到显著提升。</p>
+<h3 id="13-auxlossfree">1.3 负载均衡：Aux‑loss‑free 与节点限制路由<a class="headerlink" href="#13-auxlossfree" title="Permanent link">¶</a></h3>
+<p><strong>Aux‑loss‑free 负载均衡：</strong> 不再通过额外的辅助损失控制专家使用频率，而是为每个专家维护一个<strong>可学习偏置</strong><span class="arithmatex">\(b_r\)</span>用于路由打分的“温和干预”：</p>
+<ul>
+<li>训练时统计每步各专家负载，若某专家负载高于期望，则小幅降低其偏置；反之提高。偏置仅影响<strong>是否被选中</strong>，不影响门控值计算。</li>
+<li>这样做避免辅助损失权重调不当对主任务表示学习的负面影响，实践显示更稳定。</li>
+</ul>
+<p><strong>序列级极小正则：</strong> 为避免单个长序列极端倾斜，额外加入一个非常小权重的序列均衡项作为兜底。</p>
+<p><strong>节点限制路由：</strong><strong>训练中采用专家并行（EP）跨节点放置。为降低跨节点 all‑to‑all 通信，将每个 token 的可用专家限制在</strong><strong>最多 4 个节点</strong>内搜索与派送，在几乎不损性能的情况下大幅降低通信压力。</p>
+<p><strong>零 token‑dropping：</strong> 在上述均衡与限制策略配合下，训练全程无需丢弃 token。</p>
+<h3 id="14">1.4 归一化、激活、位置编码与分词器<a class="headerlink" href="#14" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>归一化与激活：</strong> 采用 RMSNorm 与 SwiGLU，前者在大模型与低精条件下更稳定，后者可提升前馈表达力与梯度流动性。</li>
+<li><strong>位置编码：</strong> RoPE 并配合 MLA 的位置分量“解耦”设计，方便后续基于 YaRN 的上下文扩展。</li>
+<li><strong>分词器：</strong> 自研 byte‑level BPE，词表约 128K；为压缩多语与代码文本，引入“标点+换行”复合 token，同时在训练中对部分复合 token 随机拆分以缓解边界偏置。</li>
+</ul>
+<h2 id="2-data">2. 训练数据（Data）<a class="headerlink" href="#2-data" title="Permanent link">¶</a></h2>
+<h3 id="21">2.1 规模与构成<a class="headerlink" href="#21" title="Permanent link">¶</a></h3>
+<ul>
+<li>总规模约 14.8T token，显著高于此前多数开放模型。</li>
+<li>英文与中文为主，同时扩大多语种覆盖，显著提高数学与代码等“高推理密度”语料占比，以提升复杂推理能力。</li>
+</ul>
+<h3 id="22">2.2 清洗与去重<a class="headerlink" href="#22" title="Permanent link">¶</a></h3>
+<ul>
+<li>多阶段去重（近似重复、段落级相似）、低质过滤（噪声、过短、广告等）、格式统一，强调在去重同时<strong>保多样性</strong>，避免出现领域与风格收缩。</li>
+</ul>
+<h3 id="23">2.3 文档打包与填充策略<a class="headerlink" href="#23" title="Permanent link">¶</a></h3>
+<ul>
+<li>训练样本采用“文档打包”以减少 padding 浪费，提升吞吐：将若干短文档拼接为接近最大长度的序列喂给模型。</li>
+<li>报告策略中不对跨文档注意力做专门屏蔽，权衡了效率与一致性。</li>
+</ul>
+<h3 id="24-fim">2.4 FIM 中间填空<a class="headerlink" href="#24-fim" title="Permanent link">¶</a></h3>
+<ul>
+<li>以约 10% 的概率采用 FIM 模式（Prefix‑Suffix‑Middle，PSM 模板），训练模型利用双向上下文填补中段，特别有利于代码与结构化文本处理。</li>
+</ul>
+<h3 id="25">2.5 分词器与边界偏置缓解<a class="headerlink" href="#25" title="Permanent link">¶</a></h3>
+<ul>
+<li>大词表有利于多语与代码压缩，但“标点+换行”复合 token 会在多行提示中引入边界偏置。</li>
+<li>训练时随机拆分部分复合 token，使模型见过“合并”和“拆开”两种情况，从而显著缓解该偏置。</li>
+</ul>
+<h2 id="3-pretraining">3. 预训练（Pre‑training）<a class="headerlink" href="#3-pretraining" title="Permanent link">¶</a></h2>
+<h3 id="31-clm-mtp">3.1 训练目标：CLM 与 MTP<a class="headerlink" href="#31-clm-mtp" title="Permanent link">¶</a></h3>
+<p>DeepSeek-V3的预训练以标准的<strong>自回归语言模型目标</strong>为主，即让模型预测序列中的下一个token。损失函数为因果语言模型的交叉熵损失<span class="arithmatex">\(L_{\text{LM}}\)</span>。与多数Transformer LM类似，模型基座通过最小化<span class="arithmatex">\(L_{\text{LM}} = -\frac{1}{N}\sum_{t}\log P(x_t,|,x_{&lt;t})\)</span>来学习。<strong>额外地</strong>，DeepSeek-V3引入了<strong>多Token预测 (Multi-Token Prediction, MTP)</strong> 的辅助训练目标。不同于传统只预测下一个词元，MTP鼓励模型在每个位置上<strong>展望多个未来词</strong>，目的是<strong>增加训练信号密度，提升训练效率</strong>。具体实现为：对于每个输入token，额外附加一个“小型Transformer模块”去预测其之后第2个token。DeepSeek-V3设置MTP深度为1，即每个位置除预测下一token外，再预测下下个token共两个位置。为了不干扰主模型，MTP模块<strong>共享</strong>了主模型的embedding层和输出softmax层，只是在中间增加一个Transformer层形成预测深度链。预测流程是顺序的：先用主模型预测<span class="arithmatex">\(t+1\)</span>位置，再将该预测隐藏态和原embedding拼接输入下一个模块预测<span class="arithmatex">\(t+2\)</span>，以此保持完整的因果链。每个深度都有自己的交叉熵损失<span class="arithmatex">\(L_d\)</span>。最终MTP总损失是所有深度损失的平均并乘以一个权重系数<span class="arithmatex">\(\lambda\)</span>。</p>
+<ul>
+<li><strong>主目标：</strong> 标准因果语言建模（CLM）交叉熵，最小化<span class="arithmatex">\(-\sum_t \log p(x_t\mid x_{&lt;t})\)</span>。</li>
+<li><strong>辅助目标：Multi‑Token Prediction（MTP）</strong><br>
+在每个位置额外预测未来第<span class="arithmatex">\(k\)</span>个 token（本报告设置<span class="arithmatex">\(D=1\)</span>，即额外预测第 2 个 token），提升训练信号密度与“向前规划”的表征能力。总损失示意：</li>
+</ul>
+<div class="arithmatex">\[L = L_{\text{CLM}} + \lambda \cdot \frac{1}{D}\sum_{k=1}^{D} L_{\text{MTP}}^{(k)}\]</div>
+<p>训练前期采用较大<span class="arithmatex">\(\lambda\)</span>（如 0.3）以放大辅助信号，后期降至 0.1 以回归主目标；推理阶段可直接丢弃 MTP 模块，或用作推测解码草稿头以提速。</p>
+<h3 id="32">3.2 模型与训练配置<a class="headerlink" href="#32" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>总参数规模：</strong> 约 671B（含全部专家），但因 MoE 稀疏路由，<strong>单 token 激活参数约 37B</strong>，推理成本近似一个 37B 密集模型。</li>
+<li><strong>序列长度：</strong> 预训练阶段最大全长 4K（长上下文在后续阶段扩展）。</li>
+<li><strong>优化器与裁剪：</strong> AdamW，常见设定如<span class="arithmatex">\(\beta_1=0.9,\ \beta_2=0.95,\ \mathrm{wd}=0.1\)</span>，梯度裁剪范数 1.0。</li>
+</ul>
+<h3 id="33">3.3 学习率与批大小调度<a class="headerlink" href="#33" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>学习率调度（示例）：</strong> 约 2K 步线性 warmup 至峰值学习率，随后在极长阶段保持常数，接着做余弦衰减；末段采用逐段较小常数 LR 精修收敛。</li>
+<li><strong>批大小调度：</strong> 全局批从约 3072 平滑增长至 15360（在若干亿 token 内逐步增大），随后保持稳定，以兼顾前期稳健收敛与后期高效吞吐。</li>
+</ul>
+<h3 id="34-yarn-128k">3.4 长上下文扩展（YaRN，至 128K）<a class="headerlink" href="#34-yarn-128k" title="Permanent link">¶</a></h3>
+<ul>
+<li>预训练完成后，分两阶段进行 RoPE 频率重标定的上下文扩展微调：4K→32K→128K。</li>
+<li>每阶段训练约 1000 步，使用与预训练末期相当的小学习率；在 Needle‑in‑a‑Haystack 等基准上展现稳定的长程检索与定位能力。</li>
+</ul>
+<h3 id="35">3.5 训练稳定性与成本<a class="headerlink" href="#35" title="Permanent link">¶</a></h3>
+<ul>
+<li>训练过程报告为全程稳定，无不可恢复的 loss spike 与 checkpoint 回滚。</li>
+<li>计算规模：2048×H800 集群，整体 GPU‑hours 量级约 2.788M（含预训练、上下文扩展与后训练），在该规模模型中具备极高的性价比。</li>
+</ul>
+<h2 id="4-posttraining-alignment">4. 后训练与对齐（Post‑training &amp; Alignment）<a class="headerlink" href="#4-posttraining-alignment" title="Permanent link">¶</a></h2>
+<h3 id="41-sft">4.1 有监督指令微调（SFT）<a class="headerlink" href="#41-sft" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>数据规模与覆盖：</strong> 约 150 万条指令样本，覆盖数学、代码、常识推理、开放 QA、写作与多轮对话等。</li>
+<li><strong>构造方式：</strong><br>
+复杂推理样本由更强推理模型生成初稿，再经专家模型与规则校正、拒绝采样筛选，保留“正确、清晰、简洁”的风格；非推理样本由上一代对话模型生成并经人工审核修订。</li>
+<li><strong>训练要点：</strong> 2 个 epoch 左右、余弦退火小 LR；使用样本打包与<strong>可见性掩码</strong>保证同一序列内不同样本互不可见。</li>
+</ul>
+<h3 id="42-rlhfgrpo">4.2 人类反馈强化学习（RLHF，GRPO）<a class="headerlink" href="#42-rlhfgrpo" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>奖励模型（RM）：</strong><br>
+规则式 RM 用于可客观判定任务（数学答案格式校验、代码编译与单测通过率）；模型式 RM 用于开放任务，偏好数据可包含评审 CoT，以提升鲁棒性。</li>
+<li><strong>优化算法：GRPO</strong><br>
+组内相对优势作为基线，免价值网络：对同一提示采样多份回答，计算评分均值或分位数作为基线<span class="arithmatex">\(B\)</span>，每个回答的优势为<span class="arithmatex">\(A=R-B\)</span>，最大化期望的<span class="arithmatex">\(\frac{\pi_\theta(x)}{\pi_{\text{old}}(x)}A\)</span>，并对参考策略加 KL 正则限制策略漂移。</li>
+<li><strong>提示池：</strong>覆盖代码、数学、开放问答、角色扮演与多轮对话等，强化多域对齐与稳健性。</li>
+</ul>
+<h2 id="5-infrastructure">5. 基础设施与工程优化（Infrastructure）<a class="headerlink" href="#5-infrastructure" title="Permanent link">¶</a></h2>
+<h3 id="51">5.1 集群与总体并行策略<a class="headerlink" href="#51" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>硬件：</strong> 2048×NVIDIA H800；节点内 NVLink/NVSwitch，跨节点 InfiniBand。</li>
+<li><strong>并行策略：</strong></li>
+</ul>
+<p>DeepSeek-V3 使用三类并行：</p>
+<ul>
+<li>
+<p>Pipeline Parallel (PP)：把模型层切成段，分布到不同 GPU 上流水执行。</p>
+</li>
+<li>
+<p>Expert Parallel (EP)：MoE 专家分布在不同 GPU 上，token 根据路由被发送到对应 GPU 执行。</p>
+</li>
+<li>
+<p>Data Parallel (DP)：同一模型在多个 GPU 上复制，分担不同 batch 的训练数据；梯度在更新时汇总（本次用 ZeRO-1 仅分摊优化器状态）。</p>
+</li>
+</ul>
+<p>不使用 Tensor Parallel (TP)：TP 是把矩阵拆块分布到多个 GPU 上做并行乘法，但会增加同步通信。DeepSeek-V3 通过 FP8 与通信优化降低显存和算力需求，从而避免 TP 带来的复杂性。</p>
+<h3 id="52-dualpipe">5.2 DualPipe：通信与计算的深度重叠<a class="headerlink" href="#52-dualpipe" title="Permanent link">¶</a></h3>
+<p><strong>问题背景：</strong> 在 MoE 中，最耗时的操作之一是跨 GPU 的 all-to-all 通信（把 token 激活分发到各专家 GPU，再收集结果）。如果通信不能隐藏，会成为瓶颈。</p>
+<p>传统方案：</p>
+<ul>
+<li>
+<p>1F1B (One-Forward-One-Backward)：流水线并行的一种调度方式，前后向交替执行。</p>
+</li>
+<li>
+<p>ZB1P (Zero Bubble 1F1B)：改进版，减少流水线空泡（等待）。</p>
+</li>
+</ul>
+<p>DualPipe 的创新：</p>
+<ul>
+<li>
+<p>将一次前向或反向传播拆解成更小的子块：注意力 → all-to-all dispatch → MLP/专家计算 → all-to-all combine。</p>
+</li>
+<li>
+<p>不同 token 的通信与计算交错执行（dispatch 的同时已有 token 在专家上计算）。</p>
+</li>
+<li>
+<p>前向与反向传播错叠，形成“双向流水线”。</p>
+</li>
+<li>
+<p>显式控制 GPU SM（Streaming Multiprocessor）在 通信核 与 计算核 上的资源分配，减少等待。</p>
+</li>
+</ul>
+<p><strong>收益：</strong> 几乎把通信时间完全掩盖在计算中，使得大规模 MoE 的训练效率接近于纯计算。</p>
+<h3 id="53-alltoall">5.3 高效 all‑to‑all 与显存优化<a class="headerlink" href="#53-alltoall" title="Permanent link">¶</a></h3>
+<h4 id="all-to-all">高效 all-to-all<a class="headerlink" href="#all-to-all" title="Permanent link">¶</a></h4>
+<ul>
+<li><strong>all-to-all 通信：</strong> 每个 GPU 需要把一部分 token 激活发给所有其他 GPU，再接收来自它们的部分，是最重的通信模式。</li>
+<li>
+<p><strong>DeepSeek-V3 优化：</strong></p>
+</li>
+<li>
+<p><strong>两段式路由</strong>：先跨节点用 IB 把 token 发到目标节点的“对应 GPU”，再通过 NVLink 在节点内转发到真正负责该专家的 GPU。这样把跨节点和节点内通信解耦，充分利用不同链路带宽。</p>
+</li>
+<li><strong>warp specialization</strong>：在 GPU 内部分配专门的 warp（线程束）负责通信（如 IB send、NVLink forward），另一些 warp 负责计算，提升并行度。</li>
+<li>实测只需约 <strong>20 个 SM</strong>（总共上百个 SM）即可“跑满” IB+NVLink 带宽，保证通信不拖累整体。</li>
+</ul>
+<h4 id="_1">显存优化<a class="headerlink" href="#_1" title="Permanent link">¶</a></h4>
+<ul>
+<li><strong>激活重计算 (activation recomputation)</strong>：不保存部分中间激活，在反向传播时重新计算，换算力节省显存。</li>
+<li><strong>EMA 参数放 CPU</strong>：指数滑动平均参数（用于稳定训练）存放在 CPU 内存，降低 GPU 显存占用。</li>
+<li><strong>共享嵌入/输出头</strong>：MTP 模块与主干模型共享 embedding 与输出层，避免冗余。</li>
+<li><strong>优化器状态压缩</strong>：如用 BF16 存储 Adam 的一二阶矩，进一步减少显存。</li>
+</ul>
+<h3 id="54-fp8">5.4 FP8 混合精度训练的关键细节<a class="headerlink" href="#54-fp8" title="Permanent link">¶</a></h3>
+<h4 id="fp8">FP8 格式<a class="headerlink" href="#fp8" title="Permanent link">¶</a></h4>
+<ul>
+<li><strong>E4M3</strong>：1 位符号 + 4 位指数 + 3 位尾数 → 动态范围较小，但精度较高，适合激活和权重。</li>
+<li><strong>E5M2</strong>：更大动态范围，精度较低，适合梯度。
+  DeepSeek-V3 多数情况下选用 <strong>E4M3</strong>（精度优先）。</li>
+</ul>
+<h4 id="_2">关键优化<a class="headerlink" href="#_2" title="Permanent link">¶</a></h4>
+<ol>
+<li>
+<p><strong>细粒度量化</strong></p>
+</li>
+<li>
+<p>激活按 1×128 的通道 tile 分块，各块独立缩放。</p>
+</li>
+<li>权重按 128×128 的 block 分块，各块独立缩放。</li>
+<li>
+<p>好处：避免因极少数 outlier（异常值）导致全局缩放，提升数值稳定性。</p>
+</li>
+<li>
+<p><strong>混合累加</strong></p>
+</li>
+<li>
+<p>在 Hopper GPU 的 Tensor Core 上，FP8 累加只有约 14 位有效位。</p>
+</li>
+<li>
+<p>DeepSeek-V3 的做法：每累加 128 元素就把部分和 <strong>升到 FP32</strong>（CUDA Core），再回写，减少累积误差。</p>
+</li>
+<li>
+<p><strong>低精通信</strong></p>
+</li>
+<li>
+<p>在 MoE 的 token dispatch/combine 阶段，把激活压缩为 FP8 传输，节省带宽；在关键加和时再转回 BF16。</p>
+</li>
+</ol>
+<p><strong>结果：</strong> 收敛曲线几乎和 BF16 训练重合，但显存、带宽占用显著下降。</p>
+<h3 id="55-prefill-decode">5.5 推理部署：Prefill 与 Decode<a class="headerlink" href="#55-prefill-decode" title="Permanent link">¶</a></h3>
+<h4 id="prefill">Prefill 阶段（并行填充上下文）<a class="headerlink" href="#prefill" title="Permanent link">¶</a></h4>
+<ul>
+<li><strong>目标：</strong> 高吞吐 → 输入 prompt 时并行化越多越好。</li>
+<li><strong>配置：</strong> 最小单元 32 卡（4 节点）；注意力采用 TP4 (Tensor Parallel in 4 cards) + SP（sequence parallel），MoE EP32 (Expert Parallel in 32 cards)，DP (Data Parallel)。</li>
+<li><strong>冗余专家</strong>：对负载最重的专家复制副本，动态重排，避免个别专家拖慢整个 batch。</li>
+<li><strong>双 micro-batch</strong>：在同一单元里交错执行两个 batch，隐藏通信延迟。</li>
+</ul>
+<h4 id="decode">Decode 阶段（自回归逐步生成）<a class="headerlink" href="#decode" title="Permanent link">¶</a></h4>
+<ul>
+<li><strong>目标：</strong> 低延迟 → 每次只生成一个 token，但要响应快。</li>
+<li><strong>配置：</strong> 最小单元 320 卡（40 节点）；注意力 TP4+SP，MoE EP320，DP80。</li>
+<li><strong>IBGDA (InfiniBand GPU Direct Async)</strong>：直接 GPU ↔ GPU 跨节点通信，绕过 CPU，降低延迟。</li>
+<li>同样支持动态冗余专家，减少长尾时延。</li>
+</ul>
+<h2 id="6">6. 超参配置速查<a class="headerlink" href="#6" title="Permanent link">¶</a></h2>
+<p><strong>模型与注意力</strong></p>
+<ul>
+<li>层数约 61，隐藏维 7168；多头数 128，每头维 128</li>
+<li>MLA：<span class="arithmatex">\(d_c=512\)</span>，<span class="arithmatex">\(d_c^{q}=1536\)</span>；解耦位置子维每头约 64</li>
+<li>RoPE 位置编码，配合 YaRN 长上下文扩展（4K→32K→128K）</li>
+</ul>
+<p><strong>MoE 与路由</strong></p>
+<ul>
+<li>每层 1 共享专家 + 256 路由专家；Top‑<span class="arithmatex">\(K=8\)</span></li>
+<li>节点限制路由：每 token 参与节点数不超过 4</li>
+<li>负载均衡：Aux‑loss‑free（专家偏置），序列级极小正则</li>
+<li>Token‑dropping：无</li>
+</ul>
+<p><strong>数据与预处理</strong></p>
+<ul>
+<li>14.8T token，多语种，数学与代码占比提升</li>
+<li>文档打包，不做跨样本注意力屏蔽</li>
+<li>FIM 采样率约 0.1；byte‑level BPE 词表约 128K</li>
+<li>复合 token 随机拆分缓解边界偏置</li>
+</ul>
+<p><strong>优化与调度</strong></p>
+<ul>
+<li>AdamW，<span class="arithmatex">\(\beta_1=0.9,\ \beta_2=0.95,\ \mathrm{wd}=0.1\)</span>；裁剪范数 1.0</li>
+<li>序列长 4K（预训练）；长上下文扩展到 128K</li>
+<li>学习率：2K 步 warmup → 长期常数 → 余弦衰减 → 末段小常数精修</li>
+<li>批大小：3072 → 15360（逐步增大后保持）</li>
+<li>MTP：<span class="arithmatex">\(D=1\)</span>，前期<span class="arithmatex">\(\lambda\approx0.3\)</span>，后期降至 0.1</li>
+</ul>
+<p><strong>并行与基础设施</strong></p>
+<ul>
+<li>2048×H800；PP×EP×DP（不使用 TP）</li>
+<li>DualPipe 重叠通信与计算；IB+NVLink 分层路由</li>
+<li>FP8 训练：E4M3、tile/block 量化、阶段性 FP32 累加</li>
+<li>推理：Prefill 32 卡单元，Decode 320 卡单元；冗余专家缓解热点</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "toc.follow", "navigation.top", "content.code.copy", "content.action.edit", "content.tabs.link", "search.highlight", "search.suggest", "header.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/glightbox/dist/js/glightbox.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

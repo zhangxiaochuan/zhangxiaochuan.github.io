@@ -1,0 +1,692 @@
+<!DOCTYPE html><html lang="zh" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="&lt;p&gt;这里只有冷静思考，没有浮夸喧哗 &lt;/p&gt; 这里只有算法与代码，没有装饰和繁杂">
+      
+      
+        <meta name="author" content="Xiaochuan Zhang">
+      
+      
+        <link rel="canonical" href="https://matrixmind.fun/posts/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>标准数据并行（DP）训练流程解析 - MatrixMind.Fun</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/brand.css">
+    
+      <link rel="stylesheet" href="https://unpkg.com/glightbox/dist/css/glightbox.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="MatrixMind.Fun" class="md-header__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MatrixMind.Fun
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              标准数据并行（DP）训练流程解析
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="深色模式" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="浅色模式" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m3.55 19.09 1.41 1.41 1.8-1.79-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71 1.8 1.79 1.41-1.41-1.79-1.8M20.45 5l-1.41-1.4-1.8 1.79 1.42 1.42M13 1h-2v3h2M6.76 5.39 4.96 3.6 3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Posts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Projects
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MatrixMind.Fun" class="md-nav__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    MatrixMind.Fun
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Posts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 参数初始化与同步机制
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 前向与反向传播过程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-all-reduce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 梯度同步机制（All-Reduce）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 优化器状态管理与参数更新
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 冗余存储与通信瓶颈分析 (ZeRO 优化动机)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/zhangxiaochuan/edit/main/docs/posts/标准数据并行（DP）训练流程解析.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+  <h1>标准数据并行（DP）训练流程解析</h1>
+
+<div class="mmf-tags">
+  <span class="mmf-tags-title">标签：</span>
+  <a class="mmf-tag" href="/tags/并行训练/" title="并行训练">并行训练</a><a class="mmf-tag" href="/tags/llm/" title="LLM">LLM</a>
+</div>
+
+<h2 id="1">1. 参数初始化与同步机制<a class="headerlink" href="#1" title="Permanent link">¶</a></h2>
+<p>在数据并行 (Data Parallel, DP) 训练中，每块 GPU 都保有一份完整的模型副本。训练开始时需要确保各 GPU 上模型参数<strong>初始值一致</strong>。通常的做法是在一个进程上初始化模型参数，然后将其广播同步到其他 GPU。例如，在 PyTorch DistributedDataParallel (DDP) 中，构造 DDP 对象时会使用 <code>ProcessGroup::broadcast()</code> 将 rank 0 进程的模型参数状态 (<code>state_dict</code>) 发送给所有其他进程。这样可以保证每个 GPU 上的模型副本从一开始就具有相同的权重值。如果模型包含缓冲区（如 BatchNorm 的均值/方差），DDP 也会在每次前向计算前广播同步这些缓冲区，从而保持模型的一致性。</p>
+<p>另一种常见方式是使用相同的随机种子在每个 GPU 上独立初始化模型参数，但仍需通过上述广播机制来确保完全同步。总之，在训练的起点，各 GPU 的模型参数都是对齐的，没有差异。这为后续的同步更新奠定了基础。</p>
+<h2 id="2">2. 前向与反向传播过程<a class="headerlink" href="#2" title="Permanent link">¶</a></h2>
+<p><strong>前向传播（Forward Pass）：</strong> 在每次训练迭代中，<strong>各 GPU 会处理不同的输入数据子集</strong>。通常将全局批次（batch）按等份划分给每个 GPU（例如采用 DistributedSampler 确保每个GPU读取不同的数据切片）。每个 GPU 使用本地的模型副本对自己的数据子集执行前向计算，产出预测结果和损失值。由于所有 GPU 上模型参数初始完全相同且尚未更新，因此针对不同数据计算出的梯度之前，各模型副本仍保持同步。前向传播阶段不需要跨 GPU 通信；每个 GPU 独立完成其计算。</p>
+<p><strong>反向传播（Backward Pass）：</strong> 随后，每个 GPU 基于其计算的损失，对本地模型执行反向传播，计算<strong>对应于整个模型所有参数的梯度</strong>。也就是说，尽管每个 GPU 只处理了全局批次的一部分样本，但它会为<strong>模型的每一个参数</strong>计算梯度（这些梯度反映了该GPU所见数据对参数的误差信号）。此时，不同 GPU 得到的梯度各不相同（因为输入数据不同）；每块 GPU 暂时各自拥有一份<strong>完整的梯度张量集合</strong>。这些本地梯度会存储在参数的 <code>.grad</code> 字段中，供后续优化步骤使用。</p>
+<p>需要注意，在标准数据并行中，各 GPU <strong>同步地</strong>进行前向和反向计算，即各 GPU 都执行相同的计算图，只是数据不同。它们通常以锁步方式推进训练：一次迭代中所有 GPU 完成前向和反向后，才会进入梯度聚合和参数更新阶段。这样保证了数据并行训练在数学上等价于单 GPU 上大批量的训练（只是将大批次拆分到多卡）——前提是正确同步梯度和更新参数。</p>
+<h2 id="3-all-reduce">3. 梯度同步机制（All-Reduce）<a class="headerlink" href="#3-all-reduce" title="Permanent link">¶</a></h2>
+<p>每个 GPU 反向传播得到的是基于其本地数据的<strong>局部梯度</strong>。为了使多卡训练与单卡大批量梯度下降的结果一致，我们需要将所有 GPU 的梯度<strong>聚合</strong>（一般取平均）后再更新参数。DP策略中经典的做法是对梯度使用 <strong>All-Reduce</strong> 操作：把各GPU对应参数的梯度加起来（或取平均）并回收到每个GPU。这一过程通常在反向传播结束或过程中触发。</p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/images/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/1752841291205-c04fda09-aef7-4e8b-af2a-abd4a7e32ec4.png" data-desc-position="bottom"><img alt="" src="../../assets/images/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/1752841291205-c04fda09-aef7-4e8b-af2a-abd4a7e32ec4.png"></a></p>
+<p><em>图：环形 All-Reduce 通信拓扑示意，每个 GPU 仅与邻居直接交换梯度分片，从而避免单一节点成为瓶颈。</em></p>
+<p>在早期简单实现中，可以由一个“参数服务器”（比如主节点/GPU）收集所有梯度求和再广播回各GPU，但这种集中式方案通信开销随GPU数线性增长，易形成瓶颈。现代库（如 NCCL）普遍采用<strong>Ring All-Reduce</strong>环形算法来优化梯度同步效率。如上图所示，所有 GPU 逻辑上组成一个环，各 GPU 将自己梯度张量按块拆分并在环上逐步与邻居交换和规约。Ring All-Reduce 分为<strong>Reduce-Scatter</strong>（各GPU逐步累加得到一块全局和）和<strong>All-Gather</strong>（将各块全局和分发，使每GPU得到完整和）两个阶段。经过一轮环形传输后，每个 GPU 最终都会得到<strong>全局梯度和</strong>（或均值）的完整拷贝。相较参数服务器模式，环形算法充分利用每块GPU的带宽，避免单点瓶颈，并且总通信量更均匀、高效。</p>
+<p>在具体实现上，PyTorch DDP 在梯度同步方面做了大量优化。DDP会在构造时为每个待训练参数注册一个autograd回调钩子，用于监听其梯度何时计算完毕。为了减少通信次数，DDP还将参数梯度划分进若干<strong>桶（bucket）</strong>中：例如将多 个小梯度张量拼合成较大的缓冲区。这些桶的大小可以通过 <code>bucket_cap_mb</code> 参数调整，一般默认上限为 25MB 左右。这样做的好处是可以以bucket为单位进行通信，降低通信调用频率并提高带宽利用率。</p>
+<p><strong>梯度All-Reduce的触发时机与粒度：</strong> 在反向传播过程中，当某些参数的梯度计算完成、对应的bucket填满时，DDP的梯度回调会立即触发一个异步的 All-Reduce 操作来同步该bucket中的所有梯度。也就是说，梯度的规约并不等到所有参数都处理完才一次性发生，而是与反向计算<strong>交叠重叠</strong>进行，从最后一层开始梯度一边生成一边就近通信。</p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/images/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/1752841359854-4c1c39ff-fd83-4fd8-9321-2f3592b03a28.png" data-desc-position="bottom"><img alt="" src="../../assets/images/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/1752841359854-4c1c39ff-fd83-4fd8-9321-2f3592b03a28.png"></a></p>
+<p><em>图：DDP 将每张卡上的梯度按参数划分到不同 bucket，中间采用钩子异步触发 All-Reduce（示例中 grad0 和 grad1 属于 bucket1，grad2 和 grad3 属于 bucket0）。梯度计算顺序与bucket划分相匹配时，可以最大化通信与计算重叠。</em></p>
+<p>如上图示例，假设模型有4个参数 <code>param0</code>-<code>param3</code>（在两张GPU的两个DDP进程中各有一份）。DDP按照逆序将参数分配入两个bucket：<code>bucket1</code> 包含 <code>grad0, grad1</code>，<code>bucket0</code> 包含 <code>grad2, grad3</code>。在反向过程中，若梯度产生顺序是 grad3→grad2→grad1→grad0（一般靠后的层梯度先计算完），那么当<code>bucket0</code>的所有梯度都已就绪时，会马上启动一次 All-Reduce 来同步这些梯度，而无需等待较靠前层的 grad0/1。接着 grad0/1 完成后同步 <code>bucket1</code>。这种设计使得通信开销隐藏在反向计算中，提高了并行效率。<strong>All-Reduce的结果</strong>是将同一参数的各GPU梯度取和（或平均)，并写回各GPU上该参数的 <code>.grad</code> 字段。因此，在反向传播全部结束时，不同GPU上对应参数的梯度张量内容<strong>完全相同</strong>。此时每块GPU都持有一份全局平均后的完整梯度。</p>
+<p>总结来说，数据并行下梯度同步采用的是<strong>逐参数（或逐bucket）All-Reduce</strong>：各GPU内存中暂存完整梯度，但通过高速互联交换，最终每个梯度张量变为全局和/平均值。这保证了后续每块卡在更新时使用的梯度与单卡等效，同时通信模式（如Ring-AllReduce）也最大程度利用了并行通信带宽。</p>
+<p>关于Ring All-Reduce的详细介绍，可以参见这篇博客：<a href="https://blog.csdn.net/qq_46009046/article/details/135161029">https://blog.csdn.net/qq_46009046/article/details/135161029</a></p>
+<h2 id="4">4. 优化器状态管理与参数更新<a class="headerlink" href="#4" title="Permanent link">¶</a></h2>
+<p>完成梯度同步后，各 GPU 拥有了相同的模型梯度，于是可以各自进行<strong>本地的优化器步骤</strong>（optimizer step）。从优化器的视角来看，每个GPU只是对自己的模型副本执行一次参数更新。由于所有GPU的参数初始相同且梯度也已同步为全局平均值，因此各GPU进行<strong>相同的参数更新计算</strong>，使得更新后它们的模型权重仍保持一致。这一过程无需额外通信：数据并行训练通过确保每次迭代所有模型副本梯度一致，来保证各副本参数同步演化。</p>
+<p>以常用的 Adam 优化器为例，除了模型参数本身，每张 GPU 上<strong>还维护了完整的优化器状态</strong>，包括每个参数的一阶动量<span class="arithmatex">\(m\)</span>（梯度的指数滑动平均）和二阶动量<span class="arithmatex">\(v\)</span>（梯度平方的指数滑动平均)等。如果使用混合精度训练，通常还会为每个参数保存一份FP32精度的主副本（即权重的高精度拷贝，用于累积精细更新）。因此，在标准数据并行中，每个GPU针对<strong>每个模型参数</strong>都会存储如下状态:</p>
+<ul>
+<li><strong>参数值</strong>：模型的权重，本例中可为 FP16（用于前向反向计算）或 FP32（全精度副本）。</li>
+<li><strong>梯度</strong>：参数的当前梯度（反向传播后已同步为全局梯度）。</li>
+<li><strong>优化器内部状态</strong>：以 Adam 为例，包含与每个参数形状相同的一阶动量张量<span class="arithmatex">\(m\)</span>和二阶动量张量<span class="arithmatex">\(v\)</span>，通常为FP32格式。此外若参数本身是FP16，还会有对应的 FP32 主权重副本。</li>
+</ul>
+<p>可以看到，每块GPU存储的优化相关数据远超出模型参数本身的大小。例如，若模型参数用16位表示，而优化器状态用32位表示，则单参数在每GPU上的总存储量约为参数的3-4倍（参数FP16占2字节，额外的FP32副本+ m + v 共约12字节，合计≈14字节，是FP16参数大小的7倍；若折算成相对于FP32参数的倍数则约3.5倍）。即使在全FP32训练下，Adam的<span class="arithmatex">\(m\)</span>和<span class="arithmatex">\(v\)</span>也使每参数存储膨胀至3倍大小。<strong>更重要的是</strong>，这些内存消耗在所有 GPU 间是完全<strong>冗余重复</strong>的：数据并行下每块卡都保存了一份<strong>完整</strong>且几乎相同的优化器状态拷贝。各GPU的<span class="arithmatex">\(m\)</span>、<span class="arithmatex">\(v\)</span>在数值上随训练迭代演进保持一致（因为它们经历了相同的更新），没有提供额外的信息量。</p>
+<p>这种冗余带来了显著的内存开销。例如，Microsoft给出的案例中，一个模型使用Adam优化时，其优化器状态总计占用约18GB显存；在单机8卡数据并行训练时<strong>每张卡都需要18GB</strong>来存储这份状态，几乎耗尽了一块32GB GPU的大部分内存。这也是大模型无法直接用传统数据并行放进单卡的原因之一。然而，这18GB其实是在8张卡上重复了8次。如果能将其合理拆分到8卡上，那么每卡只需存储约2.25GB，就能够大幅降低单卡内存占用。</p>
+<p>参数更新过程中，每个GPU依据同步后的梯度独立计算参数的新值，并相应更新本地的优化器状态 (例如更新 Adam 的<span class="arithmatex">\(m\)</span>和<span class="arithmatex">\(v\)</span>矢量)。由于各GPU梯度相同，更新公式也一致，故此步骤后各GPU的模型参数仍然完全相同。<strong>然而代价是</strong>：为了实现这一同步更新，所有GPU都各自维护了整套完整的参数和优化器状态。这种数据并行的原始策略虽然在计算上简单直接，但非常不利于大模型的内存规模扩展。</p>
+<h2 id="5-zero">5. 冗余存储与通信瓶颈分析 (ZeRO 优化动机)<a class="headerlink" href="#5-zero" title="Permanent link">¶</a></h2>
+<p>如上所述，<strong>原始数据并行存在两个主要开销瓶颈</strong>：</p>
+<ul>
+<li><strong>存储冗余：</strong> 每张 GPU 存储了模型的全部参数、副本梯度以及完整优化器状态（三者统称为模型状态<strong>Optimizer+Parameter+Gradient</strong>，即OPG）。对于<span class="arithmatex">\(N\)</span>张显卡的数据并行，模型状态的内存开销被重复了<span class="arithmatex">\(N\)</span>倍。当模型参数规模巨大时，这种线性放大导致单卡内存很快耗尽，成为训练更大模型的障碍。上节的分析表明，很多内存实际上被浪费在跨GPU重复存储相同的信息上。</li>
+<li><strong>通信开销：</strong> 每次反向传播都需要对所有参数的梯度执行 All-Reduce 同步。尽管借助Ring-AllReduce算法能够较好地利用带宽资源，但对于数十亿上百亿参数模型，梯度通信总量依然可观。All-Reduce通信本身不会改变总的数据传输量（需要传输所有梯度数据），并且必须在每次迭代都执行。这在多机分布式环境下尤其可能受网络带宽限制而形成新的瓶颈。</li>
+</ul>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/images/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/1752841518721-21e9bb87-c450-4749-a0df-9af4ee56436e.png" data-desc-position="bottom"><img alt="" src="../../assets/images/%E6%A0%87%E5%87%86%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%EF%BC%88DP%EF%BC%89%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/1752841518721-21e9bb87-c450-4749-a0df-9af4ee56436e.png"></a></p>
+<p><em>图：ZeRO 提出的分片方案显著减少了单卡内存占用。左起第一栏为传统数据并行（Baseline DP）的内存分布：每张 GPU 保存完整的参数、梯度和优化器状态（OPG）。后续各栏展示 ZeRO-1/2/3 分阶段逐步对 OPG 进行分区后的内存变化，显存占用随阶段推进大幅下降。</em></p>
+<p>为了解决上述问题，Microsoft 提出了<strong>零冗余优化器 (Zero Redundancy Optimizer, ZeRO)</strong>。ZeRO 的核心思想是<strong>利用数据并行集群的总内存，把原本在每卡完整存储的模型状态拆分（Shard/Partition）到各个GPU上</strong>，从而消除重复存储。具体而言，ZeRO将优化拆分分为三个逐步增强的阶段，对应前述 OPG 的三个部分：</p>
+<ul>
+<li><strong>ZeRO-1：优化器状态分区</strong>（<span class="arithmatex">\(P_{os}\)</span>） – 将如 Adam 的<span class="arithmatex">\(m\)</span>、<span class="arithmatex">\(v\)</span>等状态变量在进程间平均分割，每张卡仅保留其中一部分。此举理论上将 <strong>内存占用降低约 N 倍</strong>（例如8卡集群减少至原来的1/8），但 <strong>通信量</strong>不增加（因为仍需全梯度 All-Reduce）。实际效果约<strong>4倍</strong>内存缩减，因为对于Adam优化器状态通常占主导。</li>
+<li><strong>ZeRO-2：优化器状态 + 梯度分区</strong>（<span class="arithmatex">\(P_{os+g}\)</span>） – 在ZeRO-1基础上，进一步将反向得到的梯度也按参数切分归各GPU持有一部分（通过将 All-Reduce 换为更精细的 Reduce-Scatter + All-Gather 实现）。这样每张卡只需保存局部梯度块而非全量梯度，再次将内存需求减半（总体相比原始约<strong>8倍</strong>减少)，通信量仍与全量All-Reduce相当。</li>
+<li><strong>ZeRO-3：优化器状态 + 梯度 + 参数分区</strong>（<span class="arithmatex">\(P_{os+g+p}\)</span>） – 连模型参数本身也不再每卡完整保存，而是动态按需在各GPU间划分和Gather/Scatter。这使得模型的三类状态均实现按N等分存储，<strong>单卡内存占用约为原来的 1/N</strong>（理想情况下N倍减少)，突破了单卡内存限制。由于需要在前向和反向计算中及时收集/拆分参数，ZeRO-3 会引入一定的额外通信开销（一般约增加50%）。</li>
+</ul>
+<p>通过上述分区策略，ZeRO 将原始数据并行训练的<strong>内存冗余几乎完全消除</strong>，使总的GPU集群显存得以充分利用。例如，即便训练一万亿参数规模的模型，只要总GPU显存足够大，ZeRO 理论上都能将模型拆分存储并顺利训练。同时，在ZeRO-1和ZeRO-2阶段，通信量与传统DP相同；到ZeRO-3阶段，通信量相对略有增加但可接受，从而保持了与数据并行接近的通信效率。换言之，ZeRO方案在<strong>大幅降低单卡内存需求</strong>的同时，仍保留了数据并行的计算和通信并行度优势。</p>
+<p><strong>总结:</strong> 标准数据并行策略下，参数、副本梯度和优化器状态的重复存储以及全量梯度通信是主要瓶颈。这导致单卡内存浪费和扩展性受限。通过深入理解这些张量在DP中的生命周期和开销，我们很自然地看到优化空间——这正是 ZeRO 出现的背景。ZeRO 针对性地消除了各GPU间的冗余数据存储，并优化了通信方式，使得我们能够训练远超单GPU显存容量的超大模型，同时将通信开销控制在合理范围内。这样，数据并行训练在<strong>存储与通信效率</strong>上都得到大幅改进，为大规模模型训练铺平了道路。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "toc.follow", "navigation.top", "content.code.copy", "content.action.edit", "content.tabs.link", "search.highlight", "search.suggest", "header.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/glightbox/dist/js/glightbox.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

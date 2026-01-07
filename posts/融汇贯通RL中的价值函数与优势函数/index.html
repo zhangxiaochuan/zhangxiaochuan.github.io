@@ -1,0 +1,917 @@
+<!DOCTYPE html><html lang="zh" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="&lt;p&gt;这里只有冷静思考，没有浮夸喧哗 &lt;/p&gt; 这里只有算法与代码，没有装饰和繁杂">
+      
+      
+        <meta name="author" content="Xiaochuan Zhang">
+      
+      
+        <link rel="canonical" href="https://matrixmind.fun/posts/%E8%9E%8D%E6%B1%87%E8%B4%AF%E9%80%9ARL%E4%B8%AD%E7%9A%84%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BC%98%E5%8A%BF%E5%87%BD%E6%95%B0/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>融汇贯通RL中的价值函数与优势函数 - MatrixMind.Fun</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/brand.css">
+    
+      <link rel="stylesheet" href="https://unpkg.com/glightbox/dist/css/glightbox.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="MatrixMind.Fun" class="md-header__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MatrixMind.Fun
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              融汇贯通RL中的价值函数与优势函数
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="深色模式" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="浅色模式" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m3.55 19.09 1.41 1.41 1.8-1.79-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71 1.8 1.79 1.41-1.41-1.79-1.8M20.45 5l-1.41-1.4-1.8 1.79 1.42 1.42M13 1h-2v3h2M6.76 5.39 4.96 3.6 3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Posts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Projects
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MatrixMind.Fun" class="md-nav__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    MatrixMind.Fun
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Posts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        引言
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        价值函数与优势函数：定义与作用
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dqn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        值函数方法：DQN 及其扩展
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reinforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        策略梯度与 REINFORCE：优势基线的引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actor-critica2ca3c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actor-Critic算法：A2C/A3C 对价值与优势的结合
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trpo-ppo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        信赖域策略优化：TRPO 与 PPO 中的优势函数
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#off-policy-actor-criticddpgtd3-sac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        off policy Actor-Critic：DDPG、TD3 与 SAC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        优势函数的估计方法综述
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        值函数方法 vs. 优势方法：差异与适用性分析
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结论
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/zhangxiaochuan/edit/main/docs/posts/融汇贯通RL中的价值函数与优势函数.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+  <h1>融汇贯通RL中的价值函数与优势函数</h1>
+
+<div class="mmf-tags">
+  <span class="mmf-tags-title">标签：</span>
+  <a class="mmf-tag" href="/tags/强化学习/" title="强化学习">强化学习</a>
+</div>
+
+<h2 id="_1">引言<a class="headerlink" href="#_1" title="Permanent link">¶</a></h2>
+<p>强化学习（Reinforcement Learning）算法通常通过学习<strong>价值函数</strong>（value function）或直接优化<strong>策略</strong>来实现智能体策略的改进。在这一过程中，许多算法都会利用价值函数（如状态价值函数<span class="arithmatex">\(V(s)\)</span>或动作价值函数<span class="arithmatex">\(Q(s,a)\)</span>）以及<strong>优势函数</strong>（advantage function）来评估策略和指导更新。价值函数表示在给定状态或状态-动作对下能获得的预期回报，而优势函数则表示某动作相对于平均水平（基线）的相对好处。不同算法对价值函数和优势函数的定义与使用方式各异，影响了算法的训练目标、策略更新方法以及适用场景。</p>
+<p>本文将横向比较强化学习中主流算法在策略学习中对价值函数和优势函数的使用方式与实现方法。我们将讨论每种算法所用价值/优势函数的数学定义、这些函数在训练过程中的作用，优势函数的估计方法（如蒙特卡洛、时序差分TD、广义优势估计GAE等）及其变种，并对比<strong>值函数方法</strong>与<strong>优势方法</strong>（基于优势的策略梯度方法）的差异与适用性。</p>
+<h2 id="_2">价值函数与优势函数：定义与作用<a class="headerlink" href="#_2" title="Permanent link">¶</a></h2>
+<p>在阐述具体算法前，我们先明确<strong>价值函数</strong>和<strong>优势函数</strong>的定义：</p>
+<ul>
+<li><strong>状态价值函数</strong><span class="arithmatex">\(V^\pi(s)\)</span>：在策略<span class="arithmatex">\(\pi\)</span>下，从状态<span class="arithmatex">\(s\)</span>出发能获得的期望累计回报（“价值”），公式为：</li>
+</ul>
+<div class="arithmatex">\[V^\pi(s) = \mathbb{E}_\pi\left[\sum_{t=0}^{\infty} \gamma^t\, r_{t}\,\Big|\, s_0 = s\right]，\]</div>
+<p>其中<span class="arithmatex">\(\gamma\in[0,1]\)</span>为折扣因子。<span class="arithmatex">\(V(s)\)</span>衡量“处在状态<span class="arithmatex">\(s\)</span>本身有多好”。</p>
+<ul>
+<li><strong>动作价值函数</strong><span class="arithmatex">\(Q^\pi(s,a)\)</span>：在策略<span class="arithmatex">\(\pi\)</span>下，智能体在状态<span class="arithmatex">\(s\)</span>采取动作<span class="arithmatex">\(a\)</span>后所能获得的期望累计回报，即<strong>Q函数</strong>，定义为：</li>
+</ul>
+<div class="arithmatex">\[Q^\pi(s,a) = \mathbb{E}_\pi\left[\sum_{t=0}^{\infty} \gamma^t\, r_{t}\,\Big|\, s_0 = s, a_0 = a\right]。\]</div>
+<p><span class="arithmatex">\(Q(s,a)\)</span>评价“在状态<span class="arithmatex">\(s\)</span>下执行动作<span class="arithmatex">\(a\)</span>的好坏”，是动作-状态对的价值。</p>
+<ul>
+<li><strong>优势函数</strong><span class="arithmatex">\(A^\pi(s,a)\)</span>：表示动作<span class="arithmatex">\(a\)</span>相对于状态<span class="arithmatex">\(s\)</span>的平均水平有多优越，定义为价值差：</li>
+</ul>
+<div class="arithmatex">\[A^\pi(s,a) = Q^\pi(s,a) - V^\pi(s)\]</div>
+<p>它反映在状态<span class="arithmatex">\(s\)</span>下选择特定动作<span class="arithmatex">\(a\)</span>相比平均策略（基于状态价值<span class="arithmatex">\(V\)</span>）<strong>额外</strong>能获得多少收益。优势函数为策略梯度方法提供了<strong>相对评价</strong>，减小了高方差的绝对回报评估。</p>
+<p>在策略优化中，引入<strong>基线</strong><span class="arithmatex">\(b(s)\)</span>（通常取为<span class="arithmatex">\(V(s)\)</span>）并使用优势<span class="arithmatex">\(A(s,a)=Q(s,a)-b(s)\)</span>，不会改变梯度的无偏性，却能降低方差。因此，很多策略梯度算法利用价值函数作为基线，使用优势函数进行策略更新，以提高学习稳定性。在值函数方法中，价值函数本身则直接用于评估和决策。</p>
+<p>接下来，我们将按算法类别详细比较各算法在价值函数与优势函数上的使用差异。</p>
+<h2 id="dqn">值函数方法：DQN 及其扩展<a class="headerlink" href="#dqn" title="Permanent link">¶</a></h2>
+<p>深度 Q 网络（DQN）是典型的值函数方法代表。DQN 直接近似最优动作价值函数<span class="arithmatex">\(Q(s,a)\)</span>，通过贝尔曼方程进行训练。其损失函数基于<strong>时序差分（TD）误差</strong>构造，如：</p>
+<ul>
+<li><strong>DQN 更新</strong>：使用当前 Q 网络参数<span class="arithmatex">\(\theta\)</span>和目标网络参数<span class="arithmatex">\(\theta'\)</span>，对于经验<span class="arithmatex">\((s,a,r,s')\)</span>，构造目标<span class="arithmatex">\(y = r + \gamma \max_{a'}Q_{\theta'}(s',a')\)</span>，最小化均方误差损失:</li>
+</ul>
+<div class="arithmatex">\[L(\theta) = \Big(Q_\theta(s,a) - y\Big)^2,\]</div>
+<p>其中<span class="arithmatex">\(y\)</span>为依据目标网络计算的TD目标。这一更新等价于执行Q学习的迭代更新</p>
+<div class="arithmatex">\[Q_{\text{new}}(s,a) \leftarrow (1-\alpha) Q(s,a) + \alpha \big(r + \gamma \max_{a'} Q(s',a')\big)。\]</div>
+<p>DQN 没有显式的策略参数，而是通过更新 Q 函数来<strong>间接改进策略</strong>：策略由<span class="arithmatex">\(Q\)</span>值衍生（如贪心选择<span class="arithmatex">\(\pi(s)=\arg\max_a Q(s,a)\)</span>或<span class="arithmatex">\(\epsilon\)</span>-贪心探索)。在 DQN 中<strong>没有直接使用优势函数</strong>参与损失计算或策略梯度，因为其优化目标完全基于价值函数。<strong>Dueling DQN引入了优势函数的思想，将 Q 值网络拆分为</strong>状态价值<span class="arithmatex">\(V(s)\)</span>和优势<span class="arithmatex">\(A(s,a)\)</span>两部分。Dueling DQN的输出结构假定<span class="arithmatex">\(Q(s,a)=V(s)+A(s,a)\)</span>（实际实现中减去优势的均值做归一化，以保证可辨识性）。这种分解使网络能够首先估计状态的“好坏”，再估计各动作相对于该状态的相对优势，有助于提高值估计的效率。不过，即使在Dueling DQN中，“优势函数”只是网络的一部分，其训练仍通过Q值的TD误差来进行，只是在架构上体现为价值与优势两条支路。<strong>Double DQN</strong> 等扩展则关注于值函数更新的改进（如使用双网络避免over estimate）。</p>
+<p><strong>总结</strong>：DQN 及其扩展完全以<strong>值函数</strong>为核心。它学习<span class="arithmatex">\(Q(s,a)\)</span>来指导决策，不计算显式的优势用于更新（除非算上架构内的优势分解）。对于<strong>离散动作空间</strong>的问题（如 Atari 游戏），值函数方法表现突出。但是由于需要对每个可能动作计算<span class="arithmatex">\(Q\)</span>，传统 DQN 不能直接应用于<strong>连续动作空间</strong>，后者需要策略函数直接输出连续动作（这引出了policy gradient和actor critic方法）。</p>
+<h2 id="reinforce">策略梯度与 REINFORCE：优势基线的引入<a class="headerlink" href="#reinforce" title="Permanent link">¶</a></h2>
+<p><strong>策略梯度方法</strong>直接针对策略参数进行优化，而不是先学值函数再间接导出策略。经典的 <strong>REINFORCE 算法</strong>（蒙特卡洛策略梯度）通过采样完整轨迹，根据累计回报<span class="arithmatex">\(R_t=\sum_{k=0}^{T-t}\gamma^k r_{t+k}\)</span>来更新策略参数<span class="arithmatex">\(\theta\)</span>：</p>
+<ul>
+<li><strong>REINFORCE 梯度</strong>:</li>
+</ul>
+<div class="arithmatex">\[\nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}\!\Big[\nabla_\theta \log \pi_\theta(a_t|s_t)\,R_t\Big]\]</div>
+<p>其中<span class="arithmatex">\(R_t\)</span>就是动作$ a_t$后得到的折扣回报。</p>
+<p>由于直接使用<span class="arithmatex">\(R_t\)</span>作为权重会导致<strong>高方差</strong>，可引入<strong>基线</strong><span class="arithmatex">\(b(s)\)</span>（不依赖于动作）以降低方差。通常选择<span class="arithmatex">\(V(s)\)</span>作为基线，此时<span class="arithmatex">\(R_t - V(s_t)\)</span>即为<strong>优势估计</strong><span class="arithmatex">\(A(s_t,a_t)\)</span>。引入基线后的梯度为：</p>
+<div class="arithmatex">\[\nabla_\theta J(\theta) = \mathbb{E}[\nabla_\theta \log \pi_\theta(a|s)A(s_t,a_t)]=\mathbb{E}[\nabla_\theta \log \pi_\theta(a|s)\,(R_t - V(s_t))]\]</div>
+<p>其中<span class="arithmatex">\(A(s_t,a_t)=R_t - V(s_t)\)</span>即优势函数。这样的<strong>REINFORCE with baseline</strong>算法梯度无偏，但减小了方差。当基线函数完美估计了状态值时，优势的期望为0，从而剔除了和状态无关的噪声。</p>
+<p>需要注意，REINFORCE算法本身<strong>不学习值函数</strong>（如果不使用基线就是纯策略方法），因此严格来说没有“价值函数”的参与；若使用了基线，则需要一个价值函数近似器来提供<span class="arithmatex">\(V(s)\)</span>。无论如何，REINFORCE 或其他策略梯度方法<strong>本质上利用优势函数作为梯度权重</strong>（无基线时优势就是<span class="arithmatex">\(R_t\)</span>）。由于完全依赖采样回报，REINFORCE通常使用<strong>蒙特卡洛</strong>方法估计优势/回报，即直到一回合结束才能得到<span class="arithmatex">\(R_t\)</span>。这在长时间任务或稀疏奖励环境下会造成高方差和慢更新。</p>
+<p><strong>总结</strong>：REINFORCE展示了<strong>优势函数用于策略更新</strong>的基本思想：通过减去基线（状态价值）形成优势，以相对回报指导策略优化。该思想在后续的Actor-Critic算法中得到广泛应用。</p>
+<h2 id="actor-critica2ca3c">Actor-Critic算法：A2C/A3C 对价值与优势的结合<a class="headerlink" href="#actor-critica2ca3c" title="Permanent link">¶</a></h2>
+<p>Actor-Critic方法将策略（Actor）优化与值函数（Critic）估计相结合。A2C/A3C就是典型代表，其中“Critic”估计状态值函数<span class="arithmatex">\(V_\phi(s)\)</span>，并用于构造优势函数，Actor依据优势来更新策略。</p>
+<ul>
+<li><strong>价值函数</strong>：A2C中Critic通过最小化<strong>TD误差</strong>来学习状态值函数。例如采用<span class="arithmatex">\(n\)</span>步时序差分目标：</li>
+</ul>
+<div class="arithmatex">\[V_{\phi}(s_t) \leftarrow V_{\phi}(s_t) + \alpha\, \delta_t^{(n)},\]</div>
+<p>其中<span class="arithmatex">\(\delta_t^{(n)} = \sum_{k=0}^{n-1}\gamma^k r_{t+k} + \gamma^n V_{\phi}(s_{t+n}) - V_{\phi}(s_t)\)</span>。当<span class="arithmatex">\(n=1\)</span>时就是一步TD(0)更新，<span class="arithmatex">\(n=T-t\)</span>则为蒙特卡洛回报。</p>
+<ul>
+<li><strong>优势估计</strong>：A2C利用Critic提供的<span class="arithmatex">\(V(s)\)</span>计算优势<span class="arithmatex">\(\hat{A}(s_t,a_t)\)</span>。常用的一步优势为<span class="arithmatex">\(\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)\)</span>。实际实现中，A3C论文采用多步回报（例如20步）估计<span class="arithmatex">\(Q\)</span>，再减去<span class="arithmatex">\(V\)</span>得到优势，以折中偏差和方差。无论一步还是多步，<strong>优势函数 = TD目标 - 当前价值估计</strong>。</li>
+<li><strong>策略更新</strong>：Actor根据优势进行梯度上升。策略损失通常为：</li>
+</ul>
+<div class="arithmatex">\[L_{\text{actor}} = -\log \pi_\theta(a_t|s_t)\,\hat{A}(s_t,a_t),\]</div>
+<p>即<span class="arithmatex">\(\nabla_\theta L = -\hat{A}(s_t,a_t),\nabla_\theta \log \pi_\theta(a_t|s_t)\)</span>。当优势为正时，该动作概率应增加；优势为负则应降低。这正是策略梯度定律与优势函数相结合的体现。与此同时，Critic的价值函数损<span class="arithmatex">\(L_{\text{critic}} = \frac{1}{2}\big(V(s_t)-\text{target}\big)^2\)</span>用于更新<span class="arithmatex">\(\phi\)</span>。</p>
+<p>A3C（异步优势Actor-Critic）与A2C的原理类似，只是前者采用多线程异步更新，后者是同步版本。A2C/A3C借助<strong>优势函数</strong>有效降低了策略梯度的方差，且利用<strong>值函数</strong>进行基线校正，使学习更加稳定。在实践中，A3C常使用例如5步或20步回报估计优势，这相当于Monte Carlo与TD的折中：步数越大，估计越准确但方差越高。</p>
+<p><strong>适用性</strong>：A2C/A3C 属于<strong>on-policy </strong>Actor-Critic，需要从当前策略采样数据更新，无经验回放。它们可应用于<strong>离散或连续动作空间</strong>，因为Actor可以输出任意参数化策略（如离散分布或连续动作均值）。例如，A3C 在 Atari 游戏（高维离散动作）和MuJoCo连续控制任务上都取得成功。相比DQN，这类算法能更好地处理<strong>高维连续动作</strong>的问题，但由于需丢弃旧数据，样本效率较低。</p>
+<h2 id="trpo-ppo">信赖域策略优化：TRPO 与 PPO 中的优势函数<a class="headerlink" href="#trpo-ppo" title="Permanent link">¶</a></h2>
+<p><strong>信赖域策略优化（TRPO）和近端策略优化（PPO）是策略梯度方法的改进版本，注重稳定更新</strong>。两者都属于<strong>on-policy</strong>策略优化算法，并使用Actor-Critic架构，因此<strong>价值函数</strong>和<strong>优势函数</strong>在其中同样扮演关键角色。</p>
+<ul>
+<li><strong>TRPO</strong>：提出通过限制策略更新的KL散度在“小信赖域”内，避免策略骤变导致性能崩溃。TRPO的优化目标是<strong>约束下的优势期望</strong>最大化，即：最大化<span class="arithmatex">\(L(\theta) = \mathbb{E}_{s,a\sim \pi_{\text{old}}}\Big[\frac{\pi_\theta(a|s)}{\pi_{\text{old}}(a|s)}\hat{A}(s,a)\Big]\)</span>，同时约束<span class="arithmatex">\(\mathbb{E}[D_{\text{KL}}(\pi_\theta||\pi_{\text{old}})] \le \delta\)</span>。这里<span class="arithmatex">\(\hat{A}(s,a)\)</span>通常通过<strong>广义优势估计（GAE）获取（详见后文）。TRPO由于引入二次规划求解，实践较复杂，但奠定了后续算法使用优势函数作为策略更新驱动</strong>的框架。</li>
+<li><strong>PPO</strong>：是对TRPO的简化和改进。PPO的常用变体（PPO-Clip）直接通过<strong>剪切（clipping）</strong>约束策略更新幅度，而不显式计算KL约束。其目标函数为：</li>
+</ul>
+<div class="arithmatex">\[L(\theta) = \mathbb{E}_{s,a\sim \pi_{\text{old}}}\Big[\min\big(r(\theta)\,\hat{A}(s,a),\ \text{clip}(r(\theta),1-\epsilon,1+\epsilon)\,\hat{A}(s,a)\big)\Big]\]</div>
+<p>其中<span class="arithmatex">\(r(\theta)=\frac{\pi_\theta(a|s)}{\pi_{\text{old}}(a|s)}\)</span>是策略概率比。这个目标确保当策略变化过大时，通过剪除<span class="arithmatex">\(r(\theta)\)</span>超过<span class="arithmatex">\([1-\epsilon,1+\epsilon]\)</span>的部分来限制更新。<strong>优势函数</strong><span class="arithmatex">\(\hat{A}(s,a)\)</span>在此仍然作为加权因子，指引哪些动作概率需要增大或减小。PPO通常使用GAE来计算优势，从而在偏差与方差间取得良好折中。</p>
+<ul>
+<li><strong>价值函数基线</strong>：TRPO和PPO都需要训练一个<strong>价值函数（Critic）</strong>来提供<span class="arithmatex">\(V(s)\)</span>作为基线。通常通过最小化均方TD误差来训练<span class="arithmatex">\(V(s)\)</span>，类似A2C Critic的更新。优化时，这个值函数的损失会与策略损失一并考虑（例如 PPO 的总损失中包含一个均方值误差项）。</li>
+</ul>
+<p><strong>优势估计</strong>：TRPO论文引入了<strong>广义优势估计 GAE(</strong><span class="arithmatex">\(\lambda\)</span><strong>)</strong>方法，用加权的多步TD误差计算优势，以降低方差。GAE 的公式为：</p>
+<div class="arithmatex">\[\begin{aligned}\hat{A}_t^{\text{GAE}(\gamma,\lambda)} &amp;= \sum_{k=0}^{\infty} (\gamma\lambda)^k \delta_{t+k}\\ &amp;= r_t + \gamma V(s_{t+1}) - V(s_t) \\
+&amp;\quad + \gamma\lambda\left[r_{t+1} + \gamma V(s_{t+2}) - V(s_{t+1})\right] \\
+&amp;\quad + (\gamma\lambda)^2\left[r_{t+2} + \gamma V(s_{t+3}) - V(s_{t+2})\right] + \cdots\end{aligned},
+\]</div>
+<p>其中<span class="arithmatex">\(\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)\)</span>。<span class="arithmatex">\(\lambda\)</span>介于0和1之间调节偏差-方差权衡：<span class="arithmatex">\(\lambda=1\)</span>恢复为蒙特卡洛优势（高方差无偏），<span class="arithmatex">\(\lambda=0\)</span>则为一步TD优势（低方差有偏）。PPO 等算法常选用中间的<span class="arithmatex">\(\lambda\)</span>（如0.95）来平衡效果。GAE 的使用让优势估计更加平滑稳定，在实践中极大提高了TRPO/PPO的性能。</p>
+<p><strong>适用性</strong>：TRPO和PPO<strong>既可用于离散也可用于连续动作空间</strong>。PPO由于实现简单、稳定性好，已广泛应用于机器人控制、游戏AI等领域的<strong>连续控制</strong>和<strong>高维观测</strong>任务。相对于DQN等off-policy值方法，PPO一类方法<strong>样本效率较低</strong>（需要较大量采样），但<strong>收敛稳定</strong>，对超参数不敏感，适合需要可靠收敛的场景。</p>
+<h2 id="off-policy-actor-criticddpgtd3-sac">off policy Actor-Critic：DDPG、TD3 与 SAC<a class="headerlink" href="#off-policy-actor-criticddpgtd3-sac" title="Permanent link">¶</a></h2>
+<p>前述A2C/PPO等为on-policy方法，不能直接利用旧数据。而<strong>离策略（off-policy）Actor-Critic</strong>算法结合了值函数近似和策略函数输出，能在<strong>连续动作空间</strong>高效学习，典型代表包括 <strong>DDPG</strong>、<strong>TD3</strong> 和 <strong>SAC</strong>。</p>
+<p><strong>深度确定性策略梯度（DDPG）</strong>是一种将DQN的值学习思想应用于连续动作的算法。它包含一个确定性策略（Actor<span class="arithmatex">\(\mu(s)\)</span>）和一个Q值函数（Critic<span class="arithmatex">\(Q(s,a)\)</span>）：</p>
+<ul>
+<li><strong>值函数更新</strong>：DDPG 的Critic与DQN类似，采用<strong>一步TD</strong>进行Q网络训练。使用<strong>经验回放池</strong>的采样<span class="arithmatex">\((s,a,r,s')\)</span>，目标<span class="arithmatex">\(y = r + \gamma Q_{\phi_{\text{targ}}}(s',\mu_{\theta_{\text{targ}}}(s'))\)</span>，最小化损失<span class="arithmatex">\(\frac{1}{2}(Q_\phi(s,a)-y)^2\)</span>。这相当于 <strong>Q-learning</strong> 的连续动作版本。</li>
+<li><strong>策略更新</strong>：DDPG 的策略直接输出一个确定性动作<span class="arithmatex">\(a=\mu_\theta(s)\)</span>，其训练目标是<strong>最大化Q值</strong>。梯度可从链式法则推出为：</li>
+</ul>
+<div class="arithmatex">\[\nabla_{\theta} J \approx \mathbb{E}_{s\sim \mathcal{D}}[\nabla_a Q_{\phi}(s,a)\big|_{a=\mu_\theta(s)} \nabla_{\theta} \mu_\theta(s)]\]</div>
+<p>在实现上等价于<strong>沿着增大</strong><span class="arithmatex">\(Q\)</span><strong>值的方向调整策略参数</strong>。直观理解，Critic给出当前策略动作的价值梯度，Actor沿梯度提升其动作的价值。</p>
+<ul>
+<li><strong>优势函数视角</strong>：DDPG 的策略梯度实际上使用了<span class="arithmatex">\(Q(s,a)\)</span><strong>作为优势信号</strong>。因为对于确定性策略，策略梯度公式可被视为<span class="arithmatex">\(\nabla_\theta \log \pi(a|s)\)</span>项被<span class="arithmatex">\(\delta(a-\mu(s))\)</span>所替代，结果就是<span class="arithmatex">\(\nabla_a Q \nabla_\theta \mu\)</span>。若类比随机策略情况，<span class="arithmatex">\(Q(s,a)\)</span>在此扮演了<strong>优势函数</strong>的角色（baseline可视为0），因为它表示选择当前策略输出动作的评价（没有减去状态基线，因为对确定性策略而言，基线对梯度无贡献）。因此虽然 DDPG <strong>未显式计算</strong><span class="arithmatex">\(A(s,a)\)</span>，但其更新本质上<strong>利用了</strong><span class="arithmatex">\(Q\)</span><strong>函数来衡量动作相对好坏</strong>。</li>
+<li><strong>目标网络与稳定性</strong>：DDPG 借鉴 DQN 使用<strong>目标网络</strong>平滑更新，以及在策略输出上添加<strong>探索噪声</strong>（如OU噪声）来进行探索。这些技巧提升了训练稳定性。</li>
+</ul>
+<p><strong>Twin Delayed DDPG (TD3)</strong> 对 DDPG 作了改进，主要差异在于 <strong>使用双Q网络减小估计偏差</strong>（类似Double DQN）以及<strong>延迟更新策略</strong>以稳定训练。TD3 训练两个Critic<span class="arithmatex">\(Q_{\phi_1},Q_{\phi_2}\)</span>，取较小的估计作为目标（Clipped Double Q）, 从而缓解价值过高估计的问题。另外，策略网络更新频率降低（例如每2次Critic更新后更新一次），并在计算目标动作时对动作添加小扰动（目标策略平滑），避免策略过度追求Critic的局部不准确高值。<strong>价值函数</strong>和<strong>策略更新</strong>在TD3中仍类似于DDPG，只是更稳定了。TD3同样没有显式优势函数，但双Q机制可以理解为更精准地评估了“优势”（避免把不优势的动作误判为高价值）。</p>
+<p><strong>Soft Actor-Critic（SAC）</strong>进一步结合了策略随机性和熵正则化。SAC 的主要特点：</p>
+<ul>
+<li><strong>策略是随机的</strong>（输出高斯分布等），不同于DDPG/TD3确定性策略。这使策略有<strong>探索性</strong>，并可以训练<strong>期望策略梯度</strong>。</li>
+<li><strong>熵项奖励</strong>：SAC在奖励中加入策略熵<span class="arithmatex">\(H(\pi(\cdot|s))\)</span>，目标是最大化预期回报和熵的加权和。这等价于在策略更新时加入一项鼓励更随机（探索性更强）的策略。公式上，相当于将价值函数重新定义为包含熵项。熵系数<span class="arithmatex">\(\alpha\)</span>可固定或自动调节。</li>
+<li><strong>值函数与优势</strong>：现代版本的SAC使用两个Q网络<span class="arithmatex">\(Q_{\phi_1}, Q_{\phi_2}\)</span>，不再单独维护<span class="arithmatex">\(V(s)\)</span>函数（早期版本有一个<span class="arithmatex">\(V\)</span>网络用于帮助训练Q）。两个Q网络的训练类似TD3（带目标网络、polyak平均、clipped double Q）。目标值计算时包含熵项：对于下一状态<span class="arithmatex">\(s'\)</span>，取当前策略<span class="arithmatex">\(\pi\)</span>输出的动作并计算<span class="arithmatex">\(Q(s',a') - \alpha \log \pi(a'|s')\)</span>作为扩展的目标。因此Critic的<strong>Bellman目标</strong>为：</li>
+</ul>
+<div class="arithmatex">\[y = r + \gamma\Big(\min_{i=1,2}Q_{\phi_i,\text{targ}}(s',a') - \alpha \log \pi_\theta(a'|s')\Big)\]</div>
+<p>其中其中<span class="arithmatex">\(\alpha\)</span>为熵系数，<span class="arithmatex">\(a'\sim\pi(\cdot|s')\)</span>，<span class="arithmatex">\(\log\pi\)</span>项体现策略随机性的奖励。<strong>策略更新</strong>则以最大化<strong>soft Q值</strong>为目标，损失为：</p>
+<div class="arithmatex">\[L_{\text{actor}} = -\mathbb{E}_{s\sim \mathcal{D}}\Big[ Q_{\phi}(s,a) - \alpha \log \pi_\theta(a|s) \Big]，\]</div>
+<p>即使<span class="arithmatex">\(Q-\alpha \log\pi\)</span>最大（平衡了价值和熵）。SAC没有显式的优势函数计算，但如果从策略梯度形式看，优势相当于<span class="arithmatex">\(Q(s,a) - (\text{某个baseline})\)</span>。由于SAC策略更新时<strong>同时</strong>考虑增大利润（高<span class="arithmatex">\(Q\)</span>）和增大熵（高<span class="arithmatex">\(H\)</span>），baseline可以理解为隐含在<span class="arithmatex">\(-\alpha\log\pi\)</span>这一项中。</p>
+<ul>
+<li><strong>训练性质</strong>：SAC与DDPG一样是<strong>off-policy</strong>且可利用经验回放重复利用样本。它在连续控制任务中表现出色，通常比DDPG/TD3更稳定且样本效率高。SAC允许策略是随机的，但依然使用价值函数来指导策略改善，属于<strong>基于值的Actor-Critic</strong>变种。</li>
+</ul>
+<p><strong>小结</strong>：对于DDPG/TD3/SAC这类算法，价值函数（Q函数）是核心：它们直接学习<span class="arithmatex">\(Q(s,a)\)</span>并用它来指导策略参数更新。优势函数没有以显式形式出现（不像A2C/PPO那样计算<span class="arithmatex">\(A(s,a)\)</span>），但Q值本身承担了优势评估的作用。例如DDPG中，策略梯度用<span class="arithmatex">\(\nabla_a Q\)</span>，意味着动作价值越高（优势越大）就提高该动作概率；TD3也是基于Q；SAC虽然有熵项，但仍是通过Q值衡量动作优劣。<strong>连续动作空间</strong>的问题通常依赖这些算法，因为纯值方法（如DQN）无法直接应用。相对于on-policy方法，这些off-policy算法<strong>数据利用率高</strong>（可重放经验），在<strong>稀疏奖励</strong>场景中能够多次学习少量成功经验，因而在需要高效率探索时更有优势。不过，它们对超参数（探索噪声、稳定化技巧）较敏感，训练过程可能不如PPO平滑。</p>
+<h2 id="_3">优势函数的估计方法综述<a class="headerlink" href="#_3" title="Permanent link">¶</a></h2>
+<p>不同算法在训练中采用了不同的<strong>优势估计</strong>策略，主要包括：</p>
+<ul>
+<li><strong>蒙特卡洛（MC）估计</strong>：直接利用完整回报作为优势。例如REINFORCE中<span class="arithmatex">\(A(s_t,a_t)=R_t - b(s_t)\)</span>，若不使用基线则<span class="arithmatex">\(A=R_t\)</span>。MC 优势无偏但方差高，一般仅在回合结束才能计算。策略梯度方法在回合较短或有足够样本时可用MC。</li>
+<li><strong>时序差分（TD）一步估计</strong>：使用单步奖励加值函数bootstrap：<span class="arithmatex">\(A(s,a)\approx \delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)\)</span>。这其实是TD(0)的<strong>TD误差</strong>，常用于Actor-Critic算法每步在线地计算优势。一步TD有偏但方差低，可以实时更新。</li>
+<li><strong>多步 TD(</strong><span class="arithmatex">\(n\)</span><strong>) 估计</strong>：综合考虑<span class="arithmatex">\(n\)</span>步内的收益：<span class="arithmatex">\(\hat{A}_t^{(n)} = \sum_{k=0}^{n-1} \gamma^k r_{t+k} + \gamma^n V(s_{t+n}) - V(s_t)\)</span>。<span class="arithmatex">\(n\)</span>步回报包含更多实际奖励信息，减小偏差，但若<span class="arithmatex">\(n\)</span>大方差会上升。A2C/A3C常采用固定的多步（如5步、20步）优势估计，以权衡稳定性和性能。</li>
+<li><strong>TD(</strong><span class="arithmatex">\(\lambda\)</span><strong>)与广义优势估计（GAE）</strong>：TD(<span class="arithmatex">\(\lambda\)</span>)通过对不同步长的回报加权求和实现从MC到TD(0)的平滑过渡。<strong>GAE</strong>是应用于优势估计的TD(<span class="arithmatex">\(\lambda\)</span>)：使用参数<span class="arithmatex">\(\lambda\)</span>对<span class="arithmatex">\(n\)</span>步TD误差加权平均。其形式如前述<br>
+<span class="arithmatex">\(\hat{A}_t^{\text{GAE}} = \sum_{k=0}^\infty (\gamma\lambda)^k \delta_{t+k}\)</span>。<span class="arithmatex">\(\lambda\)</span>越大，优势估计偏向长程MC；<span class="arithmatex">\(\lambda\)</span>越小，偏向短期TD。GAE 能灵活调整bias-variance，于TRPO/PPO等算法中效果显著，使得它们在不同任务上均取得良好性能。</li>
+</ul>
+<p>在实际实现中，不同算法采用如下优势估计方案：</p>
+<ul>
+<li><strong>DQN</strong>：值方法，无需优势估计（直接Q-learning）。</li>
+<li><strong>REINFORCE</strong>：MC回合回报（高方差，需要baseline降低方差）。</li>
+<li><strong>A2C/A3C</strong>：多步（n-step）TD目标减值，如5步TD。</li>
+<li><strong>TRPO/PPO</strong>：通常使用GAE(<span class="arithmatex">\(\lambda\)</span>)，典型<span class="arithmatex">\(\lambda=0.95\)</span>。</li>
+<li><strong>DDPG/TD3/SAC</strong>：不显式计算优势，用<span class="arithmatex">\(Q\)</span>值或TD误差直接指导策略更新。可以认为<strong>TD误差</strong>本身也是一种优势信号，在actor-critic代码中往往直接将<span class="arithmatex">\(\delta_t\)</span>视作优势近似。</li>
+</ul>
+<h2 id="vs">值函数方法 vs. 优势方法：差异与适用性分析<a class="headerlink" href="#vs" title="Permanent link">¶</a></h2>
+<p><strong>值函数方法</strong>（value-based）和<strong>基于优势的策略方法</strong>（advantage-based policy methods，即使用优势函数的策略梯度/Actor-Critic）在算法思想和应用场景上各有优势：</p>
+<ul>
+<li><strong>策略获取方式</strong>：值函数法（如Q-learning/DQN）通过学习价值函数<strong>间接</strong>地得到策略——例如对<span class="arithmatex">\(Q(s,a)\)</span>取argmax得到贪心策略；优势方法（如A2C/PPO）则<strong>直接</strong>参数化策略，通过策略梯度调整参数。直接策略优化能够自然处理<strong>连续动作空间</strong>和概率混合策略，而值方法需离散化或其他处理才能应用于连续动作。</li>
+<li><strong>学习信号</strong>：值方法利用<strong>TD误差</strong>或<strong>贝尔曼残差</strong>作为学习信号，更新方向不一定直接对应策略性能梯度；优势方法直接利用<strong>优势（策略梯度乘子）</strong><strong>指引策略朝提升回报方向更新。优势函数提供了</strong><strong>相对</strong>评价（好于平均多少），往往比绝对值评价更稳定。因此，策略梯度类算法在<strong>高维策略参数</strong>情况下更稳定，不会因为所有动作价值都很高或很低而丧失梯度信号。</li>
+<li><strong>数据效率</strong>：大多值函数法是<strong>off-policy</strong>（如DQN、DDPG能重放经验），样本利用率高，适合数据获取代价大的场景。优势策略法很多是<strong>on-policy</strong>（如A2C、PPO需要在线交互新数据），样本效率相对低，但每步更新更可靠。Off-policy的SAC、TD3结合了经验重用和策略梯度，一定程度兼顾了效率与稳定。</li>
+<li><strong>稳定性与调参</strong>：值方法在使用函数逼近时可能不稳定（存在<strong>发散</strong>风险），需要经验回放、目标网络等技巧稳定训练。策略梯度法因有基线和优势，梯度估计更平稳，但也可能面临方差大和“陷入局部最优策略”的问题，需要通过熵正则（SAC）或探索噪声等改善。总体而言，现代算法如PPO、SAC都已非常稳定，在各自领域被广泛采用。</li>
+<li><strong>探索与稀疏奖励</strong>：值方法通常通过<span class="arithmatex">\(\epsilon\)</span>-贪心或策略噪声探索，<strong>稀疏奖励</strong>时能借助价值传播更快发现高奖状态（例如从终点回传值）；而优势方法若策略一开始未采到奖励，梯度可能为零，需配合探索策略或辅助奖励。带熵的SAC鼓励探索，部分缓解了这一问题。Off-policy方法也可反复学习到的一点稀疏奖励信号，这对解决稀疏奖励任务有利。</li>
+<li><strong>高维状态</strong>：两类方法都依赖深度网络来近似价值或策略，因此在高维观测（如像素）下都能工作。DQN 通过CNN 成功应用于Atari图像输入，A3C也类似。但<strong>高维离散动作</strong>情况下，值方法可能面临输出维数过大的问题（每个动作一个Q值）；策略梯度可参数化为动作概率分布，较为自然。因此在巨大的离散动作空间或组合动作场景，策略优化可能更合适。</li>
+</ul>
+<p><strong>任务适用性总结</strong>（见下表）：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>价值函数使用</th>
+<th>优势函数使用及估计</th>
+<th>策略性质</th>
+<th>动作空间</th>
+<th>典型应用场景及特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DQN</strong></td>
+<td>学习<span class="arithmatex">\(Q(s,a)\)</span></td>
+<td>无显式优势（决斗DQN拆分<span class="arithmatex">\(A\)</span>）</td>
+<td>派生贪心策略</td>
+<td>离散</td>
+<td>Atari游戏（像素输入）等离散动作，高样本效率，需稳定技巧</td>
+</tr>
+<tr>
+<td><strong>DDPG</strong></td>
+<td>学习<span class="arithmatex">\(Q(s,a)\)</span>(2网络)</td>
+<td>无显式<span class="arithmatex">\(A\)</span>，用<span class="arithmatex">\(Q\)</span>梯度作策略信号</td>
+<td>确定性策略</td>
+<td>连续</td>
+<td>机械臂控制等连续任务，样本效率高，但探索困难，需噪声</td>
+</tr>
+<tr>
+<td><strong>TD3</strong></td>
+<td>学习<span class="arithmatex">\(Q_1,Q_2\)</span></td>
+<td>无显式<span class="arithmatex">\(A\)</span>，双Q减少估计偏差</td>
+<td>确定性策略</td>
+<td>连续</td>
+<td>连续控制，高精度动作，解决DDPG过估计，训练更稳定</td>
+</tr>
+<tr>
+<td><strong>SAC</strong></td>
+<td>学习<span class="arithmatex">\(Q_1,Q_2\)</span>（熵修正）</td>
+<td>无显式<span class="arithmatex">\(A\)</span>，含熵项的soft Q作为优势依据</td>
+<td>随机策略</td>
+<td>连续</td>
+<td>连续控制（如机器人、自动驾驶），稳定性高，探索强</td>
+</tr>
+<tr>
+<td><strong>REINF.</strong></td>
+<td>无（仅策略）</td>
+<td><span class="arithmatex">\(A=R_t - b(s)\)</span>，通常<span class="arithmatex">\(b=0\)</span>或<span class="arithmatex">\(V(s)\)</span></td>
+<td>随机策略</td>
+<td>任意</td>
+<td>理论算法，实践少直接用，高方差，需baseline，简单清晰</td>
+</tr>
+<tr>
+<td><strong>A2C/A3C</strong></td>
+<td>学习<span class="arithmatex">\(V(s)\)</span></td>
+<td><span class="arithmatex">\(\hat{A}\)</span>=n步TD误差</td>
+<td>随机策略</td>
+<td>离散/连续</td>
+<td>游戏AI（Atari）、并行环境下训练，高效利用优势降低方差</td>
+</tr>
+<tr>
+<td><strong>PPO</strong></td>
+<td>学习<span class="arithmatex">\(V(s)\)</span></td>
+<td><span class="arithmatex">\(\hat{A}\)</span>=GAE(<span class="arithmatex">\(\lambda\)</span>)</td>
+<td>随机策略</td>
+<td>离散/连续</td>
+<td>通用算法，机器人模拟、高维控制，训练稳健，工业界常用</td>
+</tr>
+<tr>
+<td><strong>TRPO</strong></td>
+<td>学习<span class="arithmatex">\(V(s)\)</span></td>
+<td><span class="arithmatex">\(\hat{A}\)</span>=GAE(<span class="arithmatex">\(\lambda\)</span>) 等</td>
+<td>随机策略</td>
+<td>离散/连续</td>
+<td>理论保障收敛，实现复杂，较少用了（PPO替代），早期机器人RL</td>
+</tr>
+</tbody>
+</table>
+<p><em>表：主流算法中价值函数与优势函数的使用比较及适用性概览。</em></p>
+<p>从上表可以看出，<strong>值函数法</strong>（DQN系列、DDPG/TD3）偏好<strong>离策略</strong>、<strong>高效利用数据</strong>，适合<strong>连续控制</strong>（DDPG/TD3）或<strong>复杂离散</strong>（DQN）但动作有限的场景；<strong>优势策略法</strong>（A2C/PPO等）提供<strong>稳定的策略改进</strong>，在<strong>高维连续</strong>控制和需要稳定训练的任务中表现突出。实际应用中常将二者结合：例如，先用off-policy方法预训练值函数，再用on-policy微调策略；或者在复杂环境中选用PPO保证收敛，再用SAC提升性能。</p>
+<h2 id="_4">结论<a class="headerlink" href="#_4" title="Permanent link">¶</a></h2>
+<p>价值函数和优势函数是强化学习算法中的两个核心概念，不同算法围绕它们发展出不同的学习范式。<strong>值函数方法</strong>通过近似最优值函数来间接获取策略，强调<strong>价值评估</strong>，适合利用丰富经验并处理某些高维观测问题，但在连续动作上需要扩展。<strong>优势方法</strong>直接优化策略，利用<strong>相对价值信号（优势）指导更新，具有梯度明确、易处理连续动作等优点，但通常需要更多样本支持。现代Actor-Critic算法</strong>融合了价值评估与策略优化，优势函数在其中扮演承上启下的角色——由Critic提供、为Actor所用，使得高效且稳定的策略学习成为可能。通过对比DQN、DDPG、A2C、PPO、TRPO、SAC、TD3、REINFORCE等算法，可以看到：每种算法对价值函数和优势函数的使用都有精巧的设计，从Q学习的Bellman更新到PPO的剪辑优势梯度，无不体现了对稳定性与效率的权衡。</p>
+<p>在更复杂的环境中，如何<strong>自适应地选择和融合优势估计方法</strong>、<strong>提升值函数和策略学习的协同</strong>，仍是强化学习研究的重要课题。通过深入理解价值函数与优势函数的作用机制，我们可以更好地选择适合的算法并针对不同任务进行改进，从而训练出更高效、鲁棒的智能体。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "toc.follow", "navigation.top", "content.code.copy", "content.action.edit", "content.tabs.link", "search.highlight", "search.suggest", "header.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/glightbox/dist/js/glightbox.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

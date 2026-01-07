@@ -1,0 +1,856 @@
+<!DOCTYPE html><html lang="zh" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="&lt;p&gt;这里只有冷静思考，没有浮夸喧哗 &lt;/p&gt; 这里只有算法与代码，没有装饰和繁杂">
+      
+      
+        <meta name="author" content="Xiaochuan Zhang">
+      
+      
+        <link rel="canonical" href="https://matrixmind.fun/posts/ZeRO%E4%BC%98%E5%8C%96%E5%99%A8%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5%E8%A7%A3%E6%9E%90/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>ZeRO优化器设计理念解析 - MatrixMind.Fun</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/brand.css">
+    
+      <link rel="stylesheet" href="https://unpkg.com/glightbox/dist/css/glightbox.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="MatrixMind.Fun" class="md-header__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MatrixMind.Fun
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ZeRO优化器设计理念解析
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="深色模式" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan" aria-label="浅色模式" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m3.55 19.09 1.41 1.41 1.8-1.79-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71 1.8 1.79 1.41-1.41-1.79-1.8M20.45 5l-1.41-1.4-1.8 1.79 1.42 1.42M13 1h-2v3h2M6.76 5.39 4.96 3.6 3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Posts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Projects
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MatrixMind.Fun" class="md-nav__button md-logo" aria-label="MatrixMind.Fun" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    MatrixMind.Fun
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/zhangxiaochuan" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Posts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 背景与动机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ZeRO 三阶段设计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. ZeRO 三阶段设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-zero-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 ZeRO-1：优化器状态分片
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-zero-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 ZeRO-2：优化器状态 + 梯度分片
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-zero-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 ZeRO-3：全参数状态分片
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 内存优化机制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 内存优化机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 模型三类状态的显存占用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 各阶段显存节省总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 激活重计算与 ZeRO 的协同
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 通信开销与分布式原语
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 通信开销与分布式原语">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 各阶段的通信模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 通信优化与异步重叠
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/zhangxiaochuan/edit/main/docs/posts/ZeRO优化器设计理念解析.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+  <h1>ZeRO优化器设计理念解析</h1>
+
+<div class="mmf-tags">
+  <span class="mmf-tags-title">标签：</span>
+  <a class="mmf-tag" href="/tags/并行训练/" title="并行训练">并行训练</a><a class="mmf-tag" href="/tags/llm/" title="LLM">LLM</a>
+</div>
+
+<h2 id="1">1. 背景与动机<a class="headerlink" href="#1" title="Permanent link">¶</a></h2>
+<p>随着深度学习模型参数规模不断攀升，传统的数据并行 (Data Parallel, DP) 训练面临严重的显存瓶颈。在标准DP中，每块GPU都维护模型的完整拷贝，包括模型参数、各层梯度和优化器状态。这种<strong>状态冗余</strong>导致显存需求随GPU数线性增加，却无法通过增加GPU来降低单卡内存占用。事实上，在当前32GB显存的GPU上，<strong>基础DP在模型超过约14亿参数时就会内存耗尽 (OOM)</strong>。以GPT-2 (15亿参数) 为例，仅Adam优化器的状态 (权重的FP32副本、一阶梯度m和二阶梯度v) 即占用约18GB显存，在单卡32GB环境下无法训练。即使使用8张GPU做数据并行，传统DP仍会在每卡复制这18GB优化器状态，总显存需求远超单卡限制。因此，大模型训练亟需新的并行策略来突破显存壁垒。</p>
+<p><strong>Zero Redundancy Optimizer (ZeRO)</strong> 由微软DeepSpeed团队提出，正是为解决上述内存冗余问题而生。ZeRO的核心思想是<strong>利用数据并行集群的整体内存资源，通过分区存储模型状态来消除各GPU间的重复占用</strong>。简而言之，不再让每张卡都保存完整的参数、梯度和优化器状态，而是<strong>按需将这些数据切分后分布到不同GPU，只在计算时临时汇集需要的部分</strong>。这种“零冗余”数据并行方案（ZeRO-DP）在保持与数据并行相当的计算和通信效率前提下，大幅提高了内存利用率。ZeRO的出现，使得模型规模几乎可以随着GPU数量线性扩展：例如理论上1024张GPU即可训练包含1万亿参数的模型，每卡分担约16GB显存。研究者利用ZeRO的这一突破成功训练了当时规模最大的17B参数语言模型。总的来说，ZeRO的背景动机在于<strong>消除数据并行中的内存冗余</strong>，从而在无需修改模型代码的情况下突破单机显存限制，支持百亿乃至万亿参数级模型的高效训练。</p>
+<h2 id="2-zero">2. ZeRO 三阶段设计<a class="headerlink" href="#2-zero" title="Permanent link">¶</a></h2>
+<p>ZeRO通过<strong>逐步增大的分片范围</strong>来实现内存优化，共划分为三个阶段（Stage 1/2/3），每个阶段在前一阶段基础上进一步减少显存冗余。各阶段主要区别在于分片对象的不同：</p>
+<ul>
+<li><strong>ZeRO-1：优化器状态分片</strong> – 只对优化器状态进行分区，每块GPU仅维护全部优化器状态中的一部分。这样可以显著削减Adam等优化器带来的内存占用，但模型参数和梯度仍完整复制在每卡上。</li>
+<li><strong>ZeRO-2：优化器状态 + 梯度分片</strong> – 在ZeRO-1基础上，进一步将反向传播产生的梯度也分片存储，各GPU只保留对应部分的梯度。这进一步降低显存需求，但模型参数本身仍未分片。</li>
+<li><strong>ZeRO-3：参数 + 梯度 + 优化器状态三重分片</strong> – 对模型训练中的<strong>所有三类主要状态</strong>都做分片。也即参数、梯度和优化器状态均打散分配到所有GPU，真正实现“零冗余”。这是内存优化幅度最大但实现也最复杂的阶段。</li>
+</ul>
+<p>下面分别介绍每个阶段的原理、通信开销和优缺点。</p>
+<h3 id="21-zero-1">2.1 ZeRO-1：优化器状态分片<a class="headerlink" href="#21-zero-1" title="Permanent link">¶</a></h3>
+<p><strong>原理：</strong> 将优化器的所有状态按参数划分为N份，分配给N个GPU进程中的各一个。例如，对于Adam优化器，每个参数对应的FP32权重副本、一阶动量m、二阶动量v这三项会拆分成N块，令第i个GPU仅保存第i块并更新相关参数。<strong>这样每张卡只需维护原本1/N的优化器状态</strong>，内存占用下降约N倍。在一个训练step结束时，各GPU需要同步它们更新的参数片段，以确保所有卡上的参数一致。这通常通过一次全局All-Gather操作收集更新后的参数来完成。</p>
+<p><strong>通信开销：</strong> ZeRO-1的通信模式与常规数据并行非常接近，因为正向和反向过程中各卡仍拥有完整参数参与计算。主要的通信仅发生在反向后的梯度归并（All-Reduce或等价实现）以及优化器更新后的参数同步上。相较于标准DP，ZeRO-1几乎没有额外通信量开销，<strong>通信成本与传统数据并行类似</strong>。因此ZeRO-1的计算速度与DP基本持平，但显存开销显著降低。</p>
+<p><strong>优缺点：</strong> 优点是实现简单、对现有训练流程改动小，通信代价低，能够直接将优化器状态内存减少约4倍。针对优化器状态占比较高的场景（例如Adam在FP16训练下状态可达参数4倍以上）效果突出。缺点是在模型参数本身很大的情况下，仍需每卡保存完整参数和梯度，<strong>无法彻底解决超大模型的显存瓶颈</strong>。因此ZeRO-1适合模型规模中等但优化器内存占用巨大的情况，例如参数数亿、使用Adam优化器的模型。</p>
+<h3 id="22-zero-2">2.2 ZeRO-2：优化器状态 + 梯度分片<a class="headerlink" href="#22-zero-2" title="Permanent link">¶</a></h3>
+<p><strong>原理：</strong> 在ZeRO-1的基础上，ZeRO-2进一步将<strong>反向传播的梯度也按参数分区</strong>。每个GPU在反向中只计算并保留自己负责参数的那部分梯度，其余梯度通过分布式规约后就地丢弃。具体实现上，当各层反向计算产生梯度时，系统将对应梯度根据参数所属分区执行Reduce-Scatter操作：将不同参数的梯度划分并规约到负责该分区的GPU上。这样每张卡最终只留下了1/N的梯度（即与其参数分区对应的部分），不用再存储完整梯度矩阵。优化器更新时，各GPU仍各自使用本地的梯度分片和优化器状态分片来更新对应的参数分片，本质上实现了数据并行下梯度同步和参数更新的融合。</p>
+<p><strong>通信开销：</strong> ZeRO-2相比ZeRO-1增加了梯度归并的通信步骤。传统DP使用All-Reduce汇总梯度，而ZeRO-2采用等价的Reduce-Scatter（规约并散播）来完成梯度同步。<strong>总通信量与All-Reduce相当，但通过规约到不同GPU避免了全副本梯度的存储</strong>。因此通信开销相对ZeRO-1略有提高，但仍保持在与DP同阶的量级。此外，DeepSpeed在ZeRO-2中常用“通信桶 (bucket)”策略，将多个小梯度打包后再做Reduce-Scatter，减少通信次数并可以与反向计算重叠。综上，ZeRO-2的通信代价中等，可通过异步化和分桶优化来减小影响。</p>
+<p><strong>优缺点：</strong> 相较ZeRO-1，ZeRO-2进一步<strong>释放了存储梯度的内存</strong>，令每卡显存占用最多可缩减到原来的1/8（理论8倍降低）。这使得在相同硬件上可以训练更大模型或使用更大batch。其缺点是实现复杂度和通信量有所增加，尤其是在梯度大量、通信带宽有限的场景下可能影响训练吞吐。但总体而言，ZeRO-2在显存换取少量通信的折衷上性价比较高，适合<strong>GPU数量有限但希望训练接近十亿级模型</strong>的情况。</p>
+<h3 id="23-zero-3">2.3 ZeRO-3：全参数状态分片<a class="headerlink" href="#23-zero-3" title="Permanent link">¶</a></h3>
+<p><strong>原理：</strong> ZeRO-3是ZeRO系列的最终阶段，<strong>对模型参数、梯度和优化器状态进行三重细粒度分片</strong>。在该模式下，没有任何一个GPU保存整个模型的参数：每个GPU只持有全部参数中的1/N（假设N张卡）。具体来说，模型初始化时将各层参数张量按行或列切分成N块，分别放到不同GPU上。<strong>前向传播</strong>时，遇到某层需要的权重，框架会从其它GPU拉取其余碎片，临时拼接出完整权重再计算。这种拉取通常通过高效的多对多All-Gather实现，并可在计算前预取下一层参数以隐藏延迟。<strong>反向传播</strong>时，每张卡根据局部输出误差只计算它拥有的参数片段的梯度，如果梯度需要跨分片汇总则使用通信规约。梯度计算后立即执行Reduce-Scatter，将完整梯度平均分发回各负责分片的GPU上。这样每块GPU同样只保留了对应参数分区的梯度。<strong>参数更新</strong>阶段，各GPU仅使用本地分片的梯度和优化器状态来更新本地参数碎片，无需全局同步，其余GPU的对应参数将由它们各自更新。下一次前向需要该参数时再重新按需收集。通过上述机制，ZeRO-3将模型三类状态的冗余拷贝全部去除，每张卡<strong>仅存储原来的1/N大小的数据碎片</strong>，大幅突破了单卡内存限制。</p>
+<p><strong>通信开销：</strong> ZeRO-3为了动态汇集所需的参数和梯度，不可避免地引入了频繁的通信。在<strong>前向</strong>过程中，每层计算前都要进行一次参数All-Gather，将该层分散在各GPU的权重碎片收集起来；在<strong>反向</strong>过程中，也可能需要对某些梯度执行All-Gather以计算参数更新（视实现策略而定），然后对梯度执行Reduce-Scatter完成跨卡梯度聚合。因此，每层的前向和反向都伴随通信操作。<strong>总体来看，ZeRO-3的通信量约为传统数据并行的1.5倍</strong>（因为参数需要额外在各卡传输），通信频次也显著更高。这对GPU互联带宽提出了更高要求。不过，DeepSpeed通过<strong>一系列通信优化</strong>来降低开销，包括：在计算时并行进行通信（隐藏All-Gather/Reduce的延迟）、提前预取下一批参数碎片以及动态调整通信粒度等。实践表明，即便在千亿参数训练中，经过优化的ZeRO-3通信耗时也可控制在总时间的15%以内。简而言之，ZeRO-3以增加一定通信换取线性级的内存节省，其通信成本虽最高但通过重叠和压缩技术可被显著缓解。</p>
+<p><strong>优缺点：</strong> 优点是不言而喻的：<strong>ZeRO-3最大化利用集群总显存，使模型规模不再受单卡限制</strong>。每增加一块GPU，就等效增加一份模型容量。例如64卡集群下理论上可训练比单卡大64倍的模型。这使得像GPT-3（1750亿参数）这类超大模型在有限资源下成为可能。另外，ZeRO-3还支持结合CPU内存和NVMe磁盘的分片异构存储（即ZeRO-Infinity），可以将参数/优化器状态进一步跨设备分片和<strong>Offload</strong>，突破GPU显存总量限制。缺点是实现复杂度和调度开销最高，对通信带宽和延迟较为敏感。尤其在GPU很多或网络较慢时，如果没有良好通信优化，可能出现通信瓶颈影响吞吐。此外，ZeRO-3对框架和模型有更多约束，例如模型参数需要在使用时可动态收集，某些不规则的模型结构可能需要特殊处理。总的来说，ZeRO-3非常适合<strong>百亿到万亿级模型的训练</strong>，已成为当前超大模型分布式训练的核心基石技术。在资源足够且通信优化得当的前提下，它能够以较小代价换取巨大的内存扩展能力。</p>
+<p><strong>阶段比较：</strong> 综合来看，ZeRO各阶段在<strong>内存节省</strong>和<strong>通信开销</strong>上呈递增关系。ZeRO-1最简单，约4倍内存节省，几乎无额外通信；ZeRO-2可达8倍左右节省，通信略增但可接受；ZeRO-3节省率与GPU数近似线性 (1/N)，但通信最复杂。具体选择上，小规模模型可用ZeRO-1/2以减少优化器开销，而<strong>真正的超大模型训练几乎只能依赖ZeRO-3</strong> 来彻底打破单卡内存天花板。实际工程中常常直接采用ZeRO-3，并通过配置调整在需要时关掉某些功能（如offload）来退化为ZeRO-2或ZeRO-1，以平衡性能和内存需求。</p>
+<p>以下是ZeRO-3一次训练迭代中的核心交换：</p>
+<table>
+<thead>
+<tr>
+<th>时间点</th>
+<th>主要操作</th>
+<th>所需通信</th>
+<th>参与张量</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型初始化</td>
+<td>按参数维度/行列把 <strong>FP16 权重</strong> 切成 <em>N</em> 块并散布到 N 张 GPU</td>
+<td><strong>无</strong>（直接分配）</td>
+<td>参数碎片</td>
+<td><code>deepspeed.zero.Init</code><br> 完成</td>
+</tr>
+<tr>
+<td><strong>前向</strong>（FWD）</td>
+<td><strong>All‑Gather</strong> 当前层的权重碎片到每张卡</td>
+<td>FWD‑AllGather</td>
+<td>参数碎片 → 完整层权重</td>
+<td>预取下一层，计算后立即 <code>release</code></td>
+</tr>
+<tr>
+<td><strong>反向</strong>（BWD）</td>
+<td>（可选）再次 All‑Gather 激活所需权重；随后对局部梯度做 <strong>Reduce‑Scatter</strong></td>
+<td>BWD‑AllGather + BWD‑ScatterReduce</td>
+<td>完整层权重 / 梯度碎片</td>
+<td>梯度钩子在 bucket 满时触发通信</td>
+</tr>
+<tr>
+<td><strong>优化器 step</strong></td>
+<td>每张卡仅用本地梯度 &amp; 本地状态更新 <strong>本地参数碎片</strong></td>
+<td>无（完全本地）</td>
+<td>m、v、FP32 主权重等</td>
+<td><strong>单卡</strong>持有 1/N 状态</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3">3. 内存优化机制<a class="headerlink" href="#3" title="Permanent link">¶</a></h2>
+<p>本节从显存占用角度分析ZeRO各阶段如何优化参数、梯度、优化器状态三类内存，并讨论激活重计算等配合策略。</p>
+<h3 id="31">3.1 模型三类状态的显存占用<a class="headerlink" href="#31" title="Permanent link">¶</a></h3>
+<p>在大模型训练中，显存主要被以下三部分消耗：</p>
+<ul>
+<li><strong>模型参数 (Parameters)：</strong> 即模型的权重矩阵和偏置等，可视为_静态存储_，在训练过程中需要常驻显存。其占用随模型规模线性增长。例如百亿级参数模型光权重就需要几十GB显存。</li>
+<li><strong>激活值 (Activations)：</strong> 前向计算过程中每层的中间激活需要暂存以供反向使用，占用随batch大小和序列长度增长，一般是显存主要消耗之一。深层Transformer中，激活占用甚至可能超过参数本身。</li>
+<li><strong>优化器状态 (Optimizer States)：</strong> 优化算法为加速收敛而维护的附加变量，比如Adam的一阶、二阶动量，还有FP32精度的主权重拷贝等。这些状态每个参数对应多份值，因此总大小往往是参数的数倍。以Adam在混合精度训练下为例，m和v通常以32位浮点存储，相当于每个参数有额外2×Param大小，再加上维护的FP32权重副本，优化器状态可达到参数<strong>4~6倍</strong>内存，占据显存大头。</li>
+</ul>
+<p>在传统数据并行中，这三部分在每块GPU上各保存一份，总体占用非常高，常导致<strong>“显存爆炸”</strong>。例如某大型模型在单GPU上训练时，参数+梯度+优化器状态总共可能需要其参数量5～8倍的显存，这对硬件提出了极高要求。</p>
+<p>ZeRO针对上述<strong>参数、梯度、优化器状态</strong>引入分片机制来分别优化。其效果可以用一个7.5B参数模型、64卡并行的案例来说明：</p>
+<ul>
+<li><strong>不使用ZeRO (标准DP)</strong>：每卡需要完整存储参数、梯度、优化器状态。例如7.5B参数模型混合精度下，每卡大约需要120GB显存，显然远超单卡容量。</li>
+<li><strong>ZeRO Stage 1 (Pos)</strong>：仅分片优化器状态，参数和梯度仍全量复制。对于64卡并行，优化器状态内存从原来的12ψ（这里ψ表示参数大小常数）降低到12ψ/64，约减少4倍。上述7.5B模型每卡占用从120GB降至约31.4GB。</li>
+<li><strong>ZeRO Stage 2 (Pos+g)</strong>：分片优化器+梯度。梯度占用从2ψ降低到2ψ/64，再结合优化器状态分片，总体内存相比DP减少8倍左右。7.5B模型例子中每卡需16.6GB，比未分片的120GB降低了86%。</li>
+<li><strong>ZeRO Stage 3 (Pos+g+p)</strong>：分片优化器+梯度+参数。此时<strong>模型状态三者均摊到64卡上，单卡所需内存约为原来的1/64</strong>。7.5B模型每卡只需约1.9GB，内存缩减达98%。换言之，只要GPU数量足够，ZeRO-3理论上可以支持任意大小的模型。</li>
+</ul>
+<p>上述是理论最大节省值，实际中还会有一些额外开销（例如通信缓存、内存碎片等）使得节省率略低于理想值。<strong>但总体趋势符合4倍 (ZeRO-1)、8倍 (ZeRO-2)、N倍 (ZeRO-3)</strong> 的级数增长。在真实实验中，ZeRO-3相较ZeRO-2通常能进一步节省约一半左右的显存。例如某GPT-3规模模型在8卡下，ZeRO-2时单卡占用74.8GB，而ZeRO-3降至41.5GB，减少了44%。虽然没达到理论1/8=12.5%（87.5%降低）的极限，但已经大幅缓解了显存压力。可见ZeRO-3结合大规模并行GPU，能将模型状态占用从“无法训练”降至“轻松容纳”的水平。</p>
+<h3 id="32">3.2 各阶段显存节省总结<a class="headerlink" href="#32" title="Permanent link">¶</a></h3>
+<p>综合以上分析，ZeRO各阶段对三类状态的内存占用影响如下：</p>
+<ul>
+<li><strong>参数 (Weights)：</strong> Stage1/2未分片参数，每卡保留全量参数，占用=100%。Stage3将参数按GPU数均分，每卡仅存原来的1/N，大幅减少了模型静态内存。</li>
+<li><strong>梯度 (Gradients)：</strong> Stage1未分片梯度，反向后每卡存完整梯度=100%。Stage2/3对梯度做Reduce-Scatter分片，每卡只保留1/N梯度，显存下降为原来的1/N。</li>
+<li><strong>优化器状态 (Opt State)：</strong> Stage1开始分片优化器状态，每卡保留1/N，显存降为1/N。Stage2/3同理保持优化器状态分片。对于Adam这意味着从原本动辄4×参数量的占用降为原来的1/N，大模型训练成为可能。</li>
+</ul>
+<p>简单来说，<strong>ZeRO-1主要节省优化器状态内存</strong>（约4倍减小），<strong>ZeRO-2在此基础上再节省梯度内存</strong>（约8倍减小），<strong>ZeRO-3则连参数也按N等比例缩减</strong>（N倍减小）。这三类状态分片相辅相成，使得模型总状态内存随并行度增加而大幅降低。正因为如此，在实际使用中我们往往将ZeRO-3与激活重计算等手段结合，充分压榨硬件显存潜力，做到<strong>“低资源跑大模型”</strong>。</p>
+<h3 id="33-zero">3.3 激活重计算与 ZeRO 的协同<a class="headerlink" href="#33-zero" title="Permanent link">¶</a></h3>
+<p>激活重计算 (Activation Checkpointing，又称<strong>Recompute</strong>) 是应对激活内存占用的常用策略，即在前向计算时有选择地不保存中间激活，等反向需要时再重新计算获取，从而节省内存。Recompute本质上用<strong>额外的计算换取内存</strong>：一般会略微降低训练吞吐，但对非常深的模型能节约40%以上的激活占用。</p>
+<p>ZeRO优化的是模型状态（参数、梯度、优化器）的存储，<strong>与Recompute针对激活内存的优化是正交互补的</strong>。二者结合可以覆盖显存开销的两个主要方面：ZeRO削减模型静态状态，Recompute压缩动态激活占用，从而最大化整体节省。DeepSpeed官方也强烈建议在使用ZeRO-2/3时开启激活重计算，以换取更大batch或更深的模型。例如在训练50层以上的Transformer时，开启Recompute可将激活内存占用降低一半左右，是ZeRO不可或缺的伙伴策略。</p>
+<p>值得一提的是，ZeRO本身也引入了一些针对激活的高级优化，被称为<strong>ZeRO-R</strong>（Residual Optimizations）。其中包括：<em>(1)</em> <strong>分区激活重计算</strong> (Partitioned Activations)，将模型并行环境下需要重复的激活也进行跨GPU分片，在需要用到时再All-Gather到一起。这可以进一步减少激活冗余拷贝，占用随并行度线性降低（甚至可选择将激活碎片暂存CPU）。<em>(2)</em> <strong>恒定大小内存池</strong>，将反复申请释放的临时张量用固定缓冲区复用，避免碎片化。<em>(3)</em> <strong>动态内存整理</strong>，将生命周期不同的张量放入预先分配的连续区，减少CUDA allocator碎片。这些技术可以视作ZeRO对激活和临时空间的“软优化”。在实际工程中，用户主要需要关注<strong>是否开启activation checkpointing</strong>。DeepSpeed提供了便捷选项：例如配置文件中<code>"activation_checkpointing": {"partition_activations": true, ...}</code>可以让ZeRO-3自动对重计算的激活进行分片存储。总之，<strong>Recompute + ZeRO</strong> 的组合是大模型训练的常规操作：前者解决深度网络激活显存占用高的问题，后者解决宽大网络参数冗余的问题，两者结合能让有限显存支持远超以往规模的模型。</p>
+<h2 id="4">4. 通信开销与分布式原语<a class="headerlink" href="#4" title="Permanent link">¶</a></h2>
+<p>大规模分布式训练不可避免地引入通信开销，而ZeRO各阶段的通信模式和优化策略是其性能关键。下面结合分布式原语AllReduce/AllGather/ReduceScatter，分析ZeRO的通信开销与并行调度。</p>
+<h3 id="41">4.1 各阶段的通信模式<a class="headerlink" href="#41" title="Permanent link">¶</a></h3>
+<p>在ZeRO方案下，不同阶段需要的通信操作有所区别：</p>
+<ul>
+<li><strong>数据并行 (Baseline DDP)</strong>：每个step主要通信是梯度All-Reduce，将各卡计算的梯度求和后同步到所有GPU。参数更新后通常不需要额外通信，因为每卡参数保持一致副本。</li>
+<li><strong>ZeRO-1</strong>：与DDP类似，只需对梯度做All-Reduce同步。另外在每次优化器更新后，用Broadcast或All-Gather发送更新后的参数给其他卡，以替换它们本地的旧参数（因为只有拥有对应优化器状态的GPU真正更新了该参数）。该参数同步与All-Reduce等价（只是发生在更新后），通信量很小。</li>
+<li><strong>ZeRO-2</strong>：使用<strong>Reduce-Scatter + All-Gather</strong>来替代All-Reduce完成梯度归并。反向中，每张卡将本地梯度分块后与对应GPU Reduce-Scatter累加，这相当于All-Reduce拆解为规约和散发两个步骤。在实现上，DeepSpeed直接对梯度进行Reduce-Scatter汇聚，各GPU得到各自分片的总梯度，然后各自更新参数。由于参数仍全量复制，各卡最终需要一致参数，所以还需一次参数广播。但如果所有GPU都应用了同样的全局梯度更新，参数本就是一致的，无需再同步。因此ZeRO-2通常<strong>避免了额外的参数通信</strong>，只在梯度归并上比DP多用了分散操作。其总通信量略高于All-Reduce但同阶，主要特点是<strong>将一次大的All-Reduce拆成两次更小操作，更易与计算重叠</strong>。</li>
+<li><strong>ZeRO-3</strong>：通信最为频繁，涵盖<strong>前向的参数All-Gather</strong>和<strong>后向的参数All-Gather + 梯度Reduce-Scatter</strong>。具体而言，在前向每层计算前，各GPU通过All-Gather从别的卡获取该层的参数碎片，组装成完整权重用于计算；在反向计算该层梯度时，同样需要确保参与计算的参数是完整的，可通过再次All-Gather参数或在前向时缓存使用；梯度产生后，立即对其执行Reduce-Scatter，将梯度片段规约并分发回各负责更新的GPU。因此，每层都有两个通信过程（前向All-Gather + 后向Reduce-Scatter，必要时还有后向All-Gather）。这些操作通过NCCL等库高效实现，但相对于ZeRO-2/DP而言通信总量增加显著。正如前文所述，ZeRO-3整体通信量约为原来的1.5倍，并会随着层数线性增加通信频次。它适合在高带宽互联环境（如NVLink、InfiniBand）下使用，在网络较慢时需要额外优化才能保持吞吐。</li>
+</ul>
+<h3 id="42">4.2 通信优化与异步重叠<a class="headerlink" href="#42" title="Permanent link">¶</a></h3>
+<p>面对ZeRO-3高频通信带来的挑战，DeepSpeed和PyTorch FSDP等实现都投入了大量优化手段，以尽可能降低通信开销对训练性能的影响。以下介绍几项关键技术：</p>
+<ul>
+<li><strong>计算与通信重叠 (Overlap Compute/Communication)：</strong> 通过<strong>多CUDA流并行</strong>执行计算和通信，使GPU不必等待数据传输完成才继续计算。例如在前向传播中，当某层参数All-Gather尚未完全完成时，可以先行利用已到达的部分数据开始计算，或者提前启动下一层的预取；在反向中，可一边进行当前层的反向计算，一边在后台异步执行前一层梯度的Reduce-Scatter。DeepSpeed提供了配置项<code>"overlap_comm": true</code>来开启这一特性，使通信耗时几乎全部被掩盖在计算过程中。Amazon团队曾发现原始ZeRO-3由于同步过于粗放，GPU常处于等待通信完成的空转状态。他们通过细粒度同步和解耦通信依赖，将通信与计算的重叠程度大大提高，显著减少了等待浪费。优化后，All-Gather和Reduce-Scatter可以几乎<strong>pipelin式地穿插</strong>在前向/后向各层的计算之间，最大化GPU利用率。</li>
+<li><strong>通信分桶与分片 (Bucketization &amp; Chunking)：</strong> 考虑到模型中存在大量小张量通信的情况，将多个小tensor拼接成一个大buffer再进行一次All-Gather或Reduce-Scatter可以显著提升带宽利用率。DeepSpeed允许用户调节如<code>reduce_bucket_size</code>、<code>allgather_bucket_size</code>参数，将梯度或参数分片累积到一定大小（如50MB）再发起通信。这样做可以<strong>摊平通信初始化开销</strong>，减少过多小报文带来的效率损失。同时，分桶传输也利于与计算重叠（每处理完一桶梯度就立刻通信，计算不必等待所有梯度算完才同步）。需要注意分桶大小过大可能增加一次通信时延，实际配置时通常在50~100MB范围调优。</li>
+<li><strong>预取下一步数据 (Prefetching)：</strong> 针对ZeRO-3中层与层之间串行通信的瓶颈，引入参数预取机制：<strong>在当前层前向/后向计算时并行请求下一层所需的参数碎片</strong>。这样当进入下一层时，所需参数可能已经在路上甚至接收完毕，缩短了等待时间。DeepSpeed的配置<code>"stage3_prefetch_bucket_size"</code>等即控制预取的粒度。合理的预取可以将通信延迟隐藏在计算中，但预取过多数据可能造成无谓传输或内存占用，需要动态权衡。实际结果表明，预取对于小batch情况下提升明显——因为每层计算更快，通信来不及完全隐藏，需要预先调度。</li>
+<li><strong>压缩与量化通信 (通信压缩)：</strong> 针对某些通信瓶颈，研究者也探索了梯度压缩、量化传输等方法。例如ZeRO++中提出对All-Gather的权重块进行8-bit量化再传输，以降低通信字节数。这些方法需配合额外的还原开销，属于前沿探索，在此不展开。</li>
+</ul>
+<p>通过以上策略，ZeRO各阶段的通信开销被大大优化。在理想环境下，ZeRO-3可近乎线性扩展：微软报告在400 GPU上训练1000亿参数模型时获得了超过10倍加速，通信并未成为主要瓶颈。而在通信较慢环境（如多机弱网络）下，充分的通信重叠和分桶也能使ZeRO-3保持较好的扩展效率。例如某实验对比显示，8卡扩展到32卡时，ZeRO-3的并行效率达到了76%，明显优于ZeRO-2的54%。总之，<strong>通信优化使得ZeRO在极大降低内存的同时，尽可能保持了训练吞吐率</strong>。在工程实践中应根据硬件和模型规模，调整如<code>overlap_comm</code>, <code>bucket_size</code>等参数，以获得通信和计算的最佳平衡。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "toc.follow", "navigation.top", "content.code.copy", "content.action.edit", "content.tabs.link", "search.highlight", "search.suggest", "header.autohide"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/glightbox/dist/js/glightbox.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
